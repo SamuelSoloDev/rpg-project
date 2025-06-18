@@ -1,0 +1,48 @@
+body{
+  background-color: darkgray;
+  display: flex;
+  color: white;
+  height: 100px
+}
+
+
+/*Narrador*/
+
+#narrador{
+  position: absolute;
+  top: 0;
+
+}
+
+
+
+#actionMenu{
+  position: absolute;
+  bottom: 0;
+  border: 1px solid black ;
+  height: 20vh;
+  width: 100vw;
+  display: flex;
+}
+
+button {
+  width: 20%;
+  height: 30%;
+}
+#aliados{
+ margin-right: 100px;
+}
+
+#Terra{
+  background: brown;
+}
+
+.hpBar{
+  background: green;
+}
+
+.chargeBar{
+  height: 10px;
+  width: 10px;
+  background: #079;
+}
