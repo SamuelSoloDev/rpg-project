@@ -74,7 +74,12 @@ const turnManager = {
 
   async empezarTurno(personaje){
     this.detenerCarga();
-    esTurno(personaje)
+    if (personaje.grupo === "aliado") {
+       menuPersonaje.uiPersonaje(personaje)
+      }
+    else {
+      esTurno(personaje);
+    }
   },
 
   terminarTurno(personaje){

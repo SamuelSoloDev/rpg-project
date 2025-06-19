@@ -62,9 +62,9 @@ class Jugadores {
 
 }
 
-const Terra = new Jugadores("Terra", "aliado", 200, 20, 25);
+const Terra = new Jugadores("Terra", "aliado", 200, 30, 28);
 
-const Heartless = new Jugadores("Heartless", "enemigo", 0, 20, 21);
+const Heartless = new Jugadores("Heartless", "enemigo", 100, 20, 21);
 
 const Xehanort = new Jugadores("Xehanort", "enemigo", 100, 20, 22);
 

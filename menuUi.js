@@ -13,7 +13,7 @@ const menuPersonaje = {
     this.menu.append(hijo);
   },
 
-  uiPersonaje(personaje, grupo){
+  uiPersonaje(personaje){
     this.limpiar();
       //crear el elemento relacionado al nombre del personaje
   const nombre = document.createElement("h1");
@@ -26,7 +26,7 @@ const menuPersonaje = {
 
   atqBtn.classList.add("ataqueBtn");
   atqBtn.textContent = "Ataca";
-  atqBtn.addEventListener("click", () => {this.uiSelector(grupo)})
+  atqBtn.addEventListener("click", () => {esTurno(personaje)})
   this.menu.append(nombre, atqBtn)
   },
 
