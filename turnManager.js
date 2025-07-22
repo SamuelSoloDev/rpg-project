@@ -1,5 +1,6 @@
-import {aver, esTurno} from './main.js';
+import {esTurno, Jugadores} from './main.js';
 import menuPersonaje from './menuUi.js';
+import screen from "./pantalla.js";
 import{pjInterface, actualizarUi} from './personajeInterface.js';
 
 const turnManager = {
@@ -25,8 +26,12 @@ const turnManager = {
   },
 
   agregar(personaje) {
+  if (personaje instanceof Jugadores) {
     this.lista.push(personaje);
-  },
+  } else {
+    console.warn("⚠️ TurnManager.agregar recibió un objeto no válido:", personaje);
+  }
+},
 
   cargarBarra() {
     if (this.turno) {
@@ -65,10 +70,12 @@ const turnManager = {
     if (aliadosVivos.length === 0) {
       this.detenerCarga();
       console.log("Ganó el equipo enemigo")
+      screen.reinicio();
     }
     else if (enemigosVivos.length === 0) {
       this.detenerCarga();
       console.log("Ganó el equipo aliado")
+      screen.reinicio();
     }
   },
 

@@ -5,6 +5,42 @@ body{
   height: 100px
 }
 
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden; /* Opcional: evita scroll */
+}
+
+
+/*Pantalla*/
+#screen{
+  position: absolute;
+  display: flex;
+}
+.screen-open{
+  height: 100dvh;
+  width: 100vw;
+  background: black;
+}
+
+.button--start{
+  width: 60vw;
+  height: 10vh;
+  margin: auto;
+}
+
+/* Cuando la pantalla está en horizontal (landscape) */
+@media screen and (orientation: landscape) {
+  button {
+    width: 30vw;
+    height: 15vh;
+  }
+}
+
+
+
 
 /*Narrador*/
 
@@ -45,4 +81,8 @@ button {
   height: 10px;
   width: 10px;
   background: #079;
+}
+
+.oculto{
+  display: none;
 }

@@ -1,72 +1,36 @@
 import menuPersonaje from "./menuUi.js"
 import turnManager from './turnManager.js';
+import screen from "./pantalla.js";
 import{pjInterface, actualizarUi} from './personajeInterface.js';
+import {Jugadores, NPC} from './Jugadores/personaje.js'
 
 
-class Jugadores {
-  constructor(nombre, grupo, vida, atq, vel) {
-    this.nombre = nombre;
-    this.grupo = grupo;
-    this.atq = atq;
-    this.vel = vel;
-    this._vivo = true;
-    this.vida = vida;
-    this._carga = 0;
-  }
-  get vida(){
-    return this._vida;
-  }
-  get vivo(){
-    return this._vivo;
-  }
+const Terra = new Jugadores({
+  nombre: "Terra",
+  grupo: "aliado",
+  vida: 200,
+  mana: 100,
+  atq: 30,
+  magia: 20,
+  vel: 28});
 
-  get carga(){
-    return this._carga;
-  }
+const Heartless = new NPC({
+  nombre: "Heartless",
+  grupo: "enemigo",
+  vida: 0,
+  mana: 50,
+  atq: 20,
+  magia: 30,
+  vel: 21});
 
-  set vida(valor){
-    this._vida = valor;
-    if (this._vida <= 0 && this._vivo) {
-      this._vivo = false;
-    }
-    if (this._vida < 0) {
-      this._vida = 0;
-    }
-  }
-
-  set carga(valor){
-    this._carga = valor;
-    if (this._carga > 100){
-      this._carga = 100;
-    }
-  }
-
-
-  atacar(enemigo){
-    enemigo.recibirDamage(this.atq);
-  }
-
-  recibirDamage(daño){
-    this.vida -= daño;
-    actualizarUi.vitBar(this)
-  }
-
-  cargar(){
-    this.carga += this.vel;
-  }
-
-  resetearCarga(){
-    this.carga = 0;
-  }
-
-
-}
-
-const Terra = new Jugadores("Terra", "aliado", 200, 30, 28);
-
-const Heartless = new Jugadores("Heartless", "enemigo", 100, 20, 21);
-
-const Xehanort = new Jugadores("Xehanort", "enemigo", 100, 20, 22);
+const Xehanort = new NPC(
+  {nombre: "Xehanort",
+   grupo: "enemigo",
+   vida: 0,
+   mana: 50,
+   magia: 50,
+   atq: 20,
+   vel: 22});
 
 
 turnManager.agregar(Terra)
@@ -74,34 +38,14 @@ turnManager.agregar(Xehanort)
 turnManager.agregar(Heartless)
 
 
-function aver(personaje) {
-  let grupo = null;
-
-  if (personaje.grupo === "aliado") {
-    grupo = turnManager.enemigosVivos;
-  }
-
-  else if (personaje.grupo === "enemigo") {
-    grupo = turnManager.aliadosVivos;
-  }
-
-  return grupo;
-}
 
 
 async function esTurno(personaje) {
+   //Por ahora, esta función hace lo siguiente: 1) primero revisa el grupo,
+   // luego revisa quién es el objetivo, pero no lo hace bien.
+   // Puesto que hace un if que dice que si el grupo del que tiene el turno es de los jugadores
+   // entonces
 
-  const grupo = aver(personaje);
-
-  let enemigo = null;
-
-  if (personaje.grupo === "aliado") {
-
-    enemigo = await menuPersonaje.uiSelector(grupo);
-  }
-  else {
-    enemigo = Terra;
-  }
 
   personaje.atacar(enemigo);
   turnManager.terminarTurno(personaje)
@@ -112,9 +56,15 @@ function comenzar() {
   turnManager.cargarBarra();
 }
 
-comenzar();
+function reiniciar(){
+  turnManager.lista.forEach(jugador => {
+    jugador.resetearEstado();
+  });
+}
+
+screen.inicio();
 
 
 
 
-export {esTurno, aver}
+export {esTurno, Jugadores, comenzar, reiniciar}

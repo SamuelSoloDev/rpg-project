@@ -1,75 +1,63 @@
-import {aver, esTurno} from './main.js';
+import {esTurno, Jugadores} from './main.js';
 
 const menuPersonaje = {
-  //agregar el menú
-  menu : document.getElementById("actionMenu"),
+  // Agregar el menú
+  menu: document.getElementById("actionMenu"),
+  nombre: document.getElementById("menu--name"),
 
-  //limpiar el menú
-  limpiar(){
+  // Limpiar el menú
+  _limpiar() {
     this.menu.innerHTML = "";
   },
 
-  agregar(hijo){
+  // Agregar elemento al menú
+  _agregar(hijo) {
     this.menu.append(hijo);
   },
 
-  uiPersonaje(personaje){
+  // Mostrar UI del personaje actual
+  uiPersonaje(personaje) {
     this.limpiar();
-      //crear el elemento relacionado al nombre del personaje
-  const nombre = document.createElement("h1");
-  nombre.classList.add("nombre");
-  nombre.textContent = `${personaje.nombre}`;
 
-  //crear el botón
+    // agregar el nombre del personaje en el menú.
+    nombre.textContent = personaje.nombre;
 
-  const atqBtn = document.createElement("button");
+    // Crear el botón de ataque
+    const atqBtn = document.createElement("button");
+    atqBtn.classList.add("ataqueBtn");
+    atqBtn.textContent = "Ataca";
+    atqBtn.addEventListener("click", () => {
+      esTurno(personaje);
+    });
 
-  atqBtn.classList.add("ataqueBtn");
-  atqBtn.textContent = "Ataca";
-  atqBtn.addEventListener("click", () => {esTurno(personaje)})
-  this.menu.append(nombre, atqBtn)
+    this.menu.append(nombre, atqBtn);
   },
 
-  uiSelector(array){
+  // Mostrar selección de objetivos
+  _uiSelector(array) {
     this.limpiar();
 
     return new Promise((resolve, reject) => {
-       array.forEach((objetivo) => {
-         const boton = document.createElement("button");
-         boton.textContent = objetivo.nombre;
-         boton.addEventListener(
-          'click', () => {
-           this.limpiar;
-           resolve(objetivo);
-         });
-         this.agregar(boton);
-       });
+      array.forEach((objetivo) => {
+        const boton = document.createElement("button");
+        boton.textContent = objetivo.nombre;
+        boton.addEventListener("click", () => {
+          this.limpiar();  // <-- Ojo: antes decía this.limpiar sin paréntesis
+          resolve(objetivo);
+        });
+        this.agregar(boton);
+      });
     });
-
   },
 
-  esperarTurno(){
+  // Mostrar mensaje de espera
+  esperarTurno() {
     this.limpiar();
+
     const msj = document.createElement("h1");
-    msj.textContent = "Esperando el siguiente turno"
+    msj.textContent = "Esperando el siguiente turno";
     this.agregar(msj);
   }
-}
+};
 
 export default menuPersonaje;
-
-
-/*
-function invocarBestia() {
-  return new Promise((resolve, reject) => {
-    setTimeout(()=> {
-      resolve("LA BESIA AH SIDO INVOCADA")
-    }, 3000);
-  });
-
-  invocarBestia().then(
-    (mensaje) => {console.log(mensaje);
-
-    }).catch(error => {console.log("Error", error);
-      });
-*/
