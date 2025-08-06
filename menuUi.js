@@ -1,4 +1,4 @@
-import {esTurno, Jugadores} from './main.js';
+import actionManager  from "./gestorDeAccion.js";
 
 const menuPersonaje = {
   // Agregar el menú
@@ -11,52 +11,71 @@ const menuPersonaje = {
   },
 
   // Agregar elemento al menú
-  _agregar(hijo) {
-    this.menu.append(hijo);
-  },
+  _agregar(...hijos) {
+  hijos.forEach(hijo => this.menu.append(hijo));
+}
+,
 
   // Mostrar UI del personaje actual
-  uiPersonaje(personaje) {
-    this.limpiar();
+ async uiPersonaje(personaje) {
+    this._limpiar();
+    return new Promise((resolve) => {
+      // agregar el nombre del personaje en el menú.
+      this.nombre.textContent = personaje.nombre;
 
-    // agregar el nombre del personaje en el menú.
-    nombre.textContent = personaje.nombre;
+      let resultado = this._imprimirBotones(personaje)
+      resolve(resultado);
+    })
 
-    // Crear el botón de ataque
-    const atqBtn = document.createElement("button");
-    atqBtn.classList.add("ataqueBtn");
-    atqBtn.textContent = "Ataca";
-    atqBtn.addEventListener("click", () => {
-      esTurno(personaje);
-    });
 
-    this.menu.append(nombre, atqBtn);
   },
 
   // Mostrar selección de objetivos
-  _uiSelector(array) {
-    this.limpiar();
+  async uiSelector(array) {
+    this._limpiar();
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       array.forEach((objetivo) => {
         const boton = document.createElement("button");
         boton.textContent = objetivo.nombre;
         boton.addEventListener("click", () => {
-          this.limpiar();  // <-- Ojo: antes decía this.limpiar sin paréntesis
+          this._limpiar();
           resolve(objetivo);
         });
-        this.agregar(boton);
+        this._agregar(boton);
       });
     });
   },
 
+  _imprimirBotones(personaje){
+    return new Promise((resolve) => {
+      personaje.opciones.forEach((opcion) =>{
+        const btn = document.createElement("button");
+
+        btn.textContent = opcion.texto;
+
+        btn.addEventListener("click", async () => {
+        this._limpiar();
+          if (opcion.subopciones) {
+          // Si hay subopciones, crear otro menú y esperar su resultado
+          const resultado = await crearBotonesConPromesa(opcion.subopciones);
+          resolve(resultado); // Retornar el valor final desde subopciones
+        } else {
+          resolve(opcion.valor); // Retornar el valor directamente
+        }
+      });
+      this._agregar(btn);
+      } )
+    })
+  },
+
   // Mostrar mensaje de espera
   esperarTurno() {
-    this.limpiar();
+    this._limpiar();
 
     const msj = document.createElement("h1");
     msj.textContent = "Esperando el siguiente turno";
-    this.agregar(msj);
+    this._agregar(msj);
   }
 };
 

@@ -6,7 +6,7 @@ class Habilidad {
     elemento = "fisico",
     escalado = 1,
     naturaleza = "defensivo",
-    tipo = "dano",
+    tipo = "habilidad",
     tipoDeDano = "fisico",
     rango = "unico",
     precision = 100,
@@ -37,11 +37,16 @@ class Habilidad {
 }
 
 const ataque = new Habilidad({
-  nombre: ataque,
+  nombre: "ataque",
   efecto: function (usuario, objetivo) {
-    objetivo.recibirDano(usuario.atq)
+     if (!objetivo || typeof objetivo.recibirDamage !== "function") {
+    console.error("El objetivo no es válido o no tiene recibirDamage()", objetivo);
+    return;
+  }
+    objetivo.recibirDamage(usuario.atq)
   },
-  naturaleza: "ofensivo"
+  naturaleza: "ofensivo",
+  tipo: "ataque"
 })
 
 const fireBall = new Habilidad({
@@ -53,9 +58,21 @@ const fireBall = new Habilidad({
     console.log("AHHH ME HAN QUEMADO")
   },
   costo: 10,
-  escalado: 2
+  escalado: 2,
+  tipo: "magia"
+})
+
+const curar = new Habilidad({
+  nombre: "curar",
+  efecto: function (usuario, objetivo) {
+    objetivo.vida += usuario.magia * this.escalado;
+    console.log(`${objetivo.nombre} se ha curado`);
+  },
+  escalado:1.5,
+  tipo: "magia",
+  naturaleza: "defensivo"
 })
 
 
 
-export {fireBall, ataque}
+export {fireBall, ataque, curar}

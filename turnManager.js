@@ -1,7 +1,11 @@
-import {esTurno, Jugadores} from './main.js';
+import {Terra, elementoAleatorio} from './main.js';
 import menuPersonaje from './menuUi.js';
 import screen from "./pantalla.js";
 import{pjInterface, actualizarUi} from './personajeInterface.js';
+import actionManager from "./gestorDeAccion.js";
+import {Jugadores, NPC} from './Jugadores/personaje.js'
+import iaNpc from "./Jugadores/IaNpc.js";
+import { ataque } from "./abilities.js";
 
 const turnManager = {
   lista: [],
@@ -36,7 +40,6 @@ const turnManager = {
   cargarBarra() {
     if (this.turno) {
       this.intervalId = setInterval(() => {
-        this.verificarEstado();
         this.lista.forEach((personaje) => {
           if (personaje.vivo) {
             personaje.cargar();
@@ -65,6 +68,8 @@ const turnManager = {
   },
 
   verificarEstado(){
+    console.log("verifico");
+
     const aliadosVivos = this.aliados.filter(p => p.vivo)
     const enemigosVivos = this.enemigos.filter(p => p.vivo)
     if (aliadosVivos.length === 0) {
@@ -81,12 +86,30 @@ const turnManager = {
 
   async empezarTurno(personaje){
     this.detenerCarga();
+    let accion = null;
+    let objetivo = null;
+    console.log(`Es turno de: ${personaje.nombre}`);
+
+
     if (personaje.grupo === "aliado") {
-       menuPersonaje.uiPersonaje(personaje)
+
+       accion = await menuPersonaje.uiPersonaje(personaje);
+       console.log(accion);
+
+       let posiblesObjetivos = actionManager.obtenerPosiblesObjetivos(personaje, accion);
+       console.log(posiblesObjetivos);
+
+       objetivo = await menuPersonaje.uiSelector(posiblesObjetivos);
       }
     else {
-      esTurno(personaje);
+      let accionElegida = iaNpc.elegirAccion(personaje);
+      accion = accionElegida.accion;
+      let posiblesObjetivos = actionManager.obtenerPosiblesObjetivos(personaje, accion);
+       console.log(posiblesObjetivos);
+      objetivo = elementoAleatorio(posiblesObjetivos);
     }
+    accion.usar(personaje, objetivo);
+    this.terminarTurno(personaje);
   },
 
   terminarTurno(personaje){

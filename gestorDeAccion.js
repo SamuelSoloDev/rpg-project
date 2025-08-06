@@ -3,9 +3,22 @@ import turnManager from './turnManager.js';
 
 const actionManager = {
   obtenerPosiblesObjetivos(personaje, accion) {
-    const naturaleza = accion.naturaleza;
-    const alcance = accion.alcance;
-    const grupo = personaje.grupo;
+    let naturaleza = null;
+    let grupo = personaje.grupo;
+    console.log(accion.naturaleza); //
+
+    //el problema empieza por acá
+    if (typeof accion === 'string') {
+      console.log("es string");
+
+      naturaleza = accion;
+    }
+    if (typeof accion === 'object') {
+      console.log("es objeto");
+      naturaleza = accion.naturaleza;
+      console.log(accion.naturaleza);
+    }
+    console.log(accion); //
 
     const mapa = {
       aliado: {
