@@ -9,11 +9,17 @@ const pjInterface = {
     this.equipoAliado.append(hijo);
   },
 
+  _limpiar(){
+    this.equipoAliado.textContent = "";
+    this.equipoEnemigo.textContent = "";
+  },
+
   agregarEnemigo(hijo){
     this.equipoEnemigo.append(hijo);
   },
 
   renderAliado(){
+
     turnManager.aliados.forEach(
     (ally) => { this.agregarAliado(this.renderizarPj(ally))
       actualizarUi.vitBar(ally);
@@ -54,6 +60,7 @@ const pjInterface = {
     return chargeBar;
   },
   renderAllPj(){
+    this._limpiar()
     this.renderAliado();
     this.renderEnemigo();
   }

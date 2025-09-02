@@ -6,11 +6,14 @@ import actionManager from "./gestorDeAccion.js";
 import {Jugadores, NPC} from './Jugadores/personaje.js'
 import iaNpc from "./Jugadores/IaNpc.js";
 import { ataque } from "./abilities.js";
+import { STATUS_MANAGER } from "./buff_and_states/status.js";
 
 const turnManager = {
   lista: [],
 
   turno: true,
+
+  turnoEnCurso: false,
 
   intervalId: null,
 
@@ -32,21 +35,28 @@ const turnManager = {
   agregar(personaje) {
   if (personaje instanceof Jugadores) {
     this.lista.push(personaje);
+    this.lista.sort((a,b)=> b.vel - a.vel)
   } else {
     console.warn("⚠️ TurnManager.agregar recibió un objeto no válido:", personaje);
   }
 },
 
   cargarBarra() {
+
     if (this.turno) {
       this.intervalId = setInterval(() => {
         this.lista.forEach((personaje) => {
+          if (this.turnoEnCurso) return;
+
           if (personaje.vivo) {
             personaje.cargar();
             actualizarUi.chargeBar(personaje);
           }
 
           if (personaje.carga >= 100 && personaje.vivo) {
+            this.turnoEnCurso = true;
+            this.detenerCarga();
+
             this.empezarTurno(personaje)
           }
         });
@@ -58,6 +68,7 @@ const turnManager = {
     this.turno = false;
     clearInterval(this.intervalId);
     this.intervalId = null;
+
   },
 
   reanudarCarga() {
@@ -85,11 +96,10 @@ const turnManager = {
   },
 
   async empezarTurno(personaje){
-    this.detenerCarga();
+    STATUS_MANAGER.checkStatus(personaje, "inicio")
     let accion = null;
     let objetivo = null;
     console.log(`Es turno de: ${personaje.nombre}`);
-
 
     if (personaje.grupo === "aliado") {
 
@@ -108,13 +118,18 @@ const turnManager = {
        console.log(posiblesObjetivos);
       objetivo = elementoAleatorio(posiblesObjetivos);
     }
+
     accion.usar(personaje, objetivo);
     this.terminarTurno(personaje);
   },
 
-  terminarTurno(personaje){
-    menuPersonaje.esperarTurno();
+  async terminarTurno(personaje){
+    STATUS_MANAGER.checkStatus(personaje, "final")
     personaje.resetearCarga()
+    console.log(personaje.carga);
+
+    menuPersonaje.esperarTurno();
+    this.turnoEnCurso = false;
     this.reanudarCarga();
   }
 };
@@ -123,9 +138,17 @@ export default turnManager;
 
 
 /*
+dejame replantearte el problema, el orden va así
+Player 1 (velocidad: 30),
+player 2 (vel 28),
+enemigo 1 (vel 20)
+enemigo 2 (vel 22)
 
- console.log("Personaje actual:", personaje);
-console.log("Tiene cargar?:", typeof personaje.cargar);
-          personaje.cargar(); // Suponemos que personaje tiene un mtodo cargar()
-          console.log(`${personaje.nombre} carga: ${personaje.carga}`)
+Los players ejecutan el render del menú cuando su turno llega (cuando la barra llega a 100)
+Por alguna razón, por que la velocidad de los players es casi la misma
+llega el turno del player 1, pero cómo la velocidad de player dos es casi igual, se renderiza el del player 2
+imagino que es por que el player dos fue el último justo después del player 1
+Cuando llega el turno de los players, las barra, efectivamente, dejan de cargar y el setInterval no está andando (cómo debe ser)
+entonces, que debo hacer para que no se superponga el turno del otro JUGADOR? (los enemigos no se superponen, ya que el problema se encuentra en lso players)
+
 */

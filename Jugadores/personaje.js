@@ -3,72 +3,103 @@ import turnManager from '../turnManager.js';
 import{pjInterface, actualizarUi} from '../personajeInterface.js';
 
 class Jugadores {
-  constructor({ nombre, grupo, vida, mana, atq, magia, vel }) {
+  constructor({ nombre, grupo, vida, mana, atq, def, magia, res, vel }) {
     this.base = {
       nombre,
       grupo,
       vida,
       mana,
       atq,
+      def: 5,
       magia,
-      vel,
+      res: 5,
+      vel
     };
 
+    this.buff = {
+      vida: [],
+      mana: [],
+      atq: [],
+      def: [],
+      magia: [],
+      res: [],
+      vel: [
+        { nombre: "acelerado", duracion: 5, valorEfecto: 0.3 }
+      ],
+      critRate: [],
+      critDamage: []
+    };
+
+    this.debuff = {
+      vida: [],
+      mana: [],
+      atq: [],
+      def: [],
+      magia: [],
+      res: [],
+      vel: [],
+      critRate: [],
+      critDamage: []
+    };
+    this.status = {};
     this.nombre = nombre;
     this.grupo = grupo;
     this._vida = vida;
     this.mana = mana;
     this.atq = atq;
+    this.def = def;
     this.magia = magia;
+    this.res = res;
     this.vel = vel;
     this._vivo = this._vida > 0;
     this._carga = 0;
-    this.opciones = [
-      { texto: "Atacar", valor:  ataque},
-      { texto: "rendirse", valor: ()=>{console.log("me rindo" ); this.vida -= this.vida;
-      } }
-    ]
+    this.critRate = 0;
+    this.critDamage = 1.75;
 
+    this.magias = {
+      fuego: { texto: "Fuego", valor: "magia_fuego" },
+      hielo: { texto: "Hielo", valor: "magia_hielo" },
+      trueno: { texto: "Trueno", valor: "magia_trueno" }
+    };
   }
 
-  get vida() {
-    return this._vida;
+  get opciones() {
+    return [
+      { texto: "Atacar", valor: ataque },
+      { texto: "Magia", subopciones: Object.values(this.magias) },
+      {
+        texto: "Objeto",
+        subopciones: [
+          { texto: "Poción", valor: "usar_pocion" },
+          { texto: "Éter", valor: "usar_eter" }
+        ]
+      }
+    ];
   }
 
-  get vivo() {
-    return this._vivo;
-  }
-
-  get carga() {
-    return this._carga;
-  }
+  get vida() { return this._vida; }
+  get vivo() { return this._vivo; }
 
   set vida(valor) {
     this._vida = valor;
-    if (this._vida <= 0 && this._vivo) {
-      this._vivo = false;
-    }
-    if (this._vida < 0) {
-      this._vida = 0;
-    }
+    if (this._vida <= 0 && this._vivo) this._vivo = false;
+    if (this._vida < 0) this._vida = 0;
     actualizarUi.vitBar(this);
     turnManager.verificarEstado();
   }
 
+  //Getter de stats
+  get totalAtq() { return this.statTotal("atq"); }
+  get totalDef() { return this.statTotal("def"); }
+  get totalMagia() { return this.statTotal("magia"); }
+  get totalRes() { return this.statTotal("res"); }
+  get totalVel() { return this.statTotal("vel"); }
+
+  get carga() { return this._carga; }
   set carga(valor) {
     this._carga = valor;
-    if (this._carga > 100) {
-      this._carga = 100;
-    }
+    if (this._carga > 100) this._carga = 100;
   }
-
-// atacar() ya no se usa directamente porque 'ataque' se incluye en this.opciones
-// con toda su lógica encapsulada.
-// Mantener este método podría generar ambigüedad.
-// atacar() {
-//   return ataque;
-// }
-
 
   recibirDamage(daño) {
     this.vida -= daño;
@@ -91,7 +122,35 @@ class Jugadores {
     this._vivo = true;
     this._carga = 0;
   }
+
+  statMod(array) {
+    let modificadores = [];
+    array.forEach(modificador => {
+      modificadores.push(modificador.valorEfecto);
+    });
+    return modificadores;
+  }
+
+  statTotal(stat) {
+    let buff = 0;
+    let debuff = 0;
+    let total = 0;
+
+    this.statMod(this.buff[stat]).forEach(valores => {
+      let valor = this[stat] * valores;
+      buff += valor;
+    });
+
+    this.statMod(this.debuff[stat]).forEach(valores => {
+      let valor = this[stat] * valores;
+      debuff += valor;
+    });
+
+    total = this[stat] + buff - debuff;
+    return total;
+  }
 }
+
 
 
 class NPC extends Jugadores {

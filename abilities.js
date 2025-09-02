@@ -31,6 +31,8 @@ class Habilidad {
     return `${this.nombre} (${this.tipo}) cuesta ${this.costo} PM y tiene ${this.precision}% de acierto.`;
   }
   usar(usuario, objetivo){
+      usuario.mana -= this.costo;
+      console.log(`Se gastó el maná de ${usuario.nombre} y ahora tiene ${usuario.mana} de maná!`);
     this.efecto(usuario, objetivo);
   }
 
@@ -70,7 +72,8 @@ const curar = new Habilidad({
   },
   escalado:1.5,
   tipo: "magia",
-  naturaleza: "defensivo"
+  naturaleza: "defensivo",
+  costo: 20
 })
 
 

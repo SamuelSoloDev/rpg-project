@@ -56,9 +56,14 @@ html, body {
   position: absolute;
   bottom: 0;
   border: 1px solid black ;
-  height: 20vh;
+  height: 30vh;
   width: 100vw;
   display: flex;
+}
+
+#actionMenu{
+  display: flex;
+  border: 1px solid black ;
 }
 
 button {
@@ -85,4 +90,22 @@ button {
 
 .oculto{
   display: none;
+}
+
+.botonMenu{
+  width: 70%;
+  height: 70%;
+  position: relative;
+}
+
+.nopuede{
+  background: red;
+}
+
+#aliados {
+  border: 1px solid black;
+}
+
+#enemigos {
+  border: 1px solid black;
 }
