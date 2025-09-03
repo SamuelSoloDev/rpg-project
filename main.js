@@ -7,6 +7,11 @@ import iaNpc from './Jugadores/IaNpc.js';
 import { CONGELAR, STATUS_MANAGER, VENENO } from "./buff_and_states/status.js";
 import { MODIFIER_MANAGER, PRISA, FRENO } from "./buff_and_states/modifier.js";
 
+
+
+//Heroes
+const heroes = ["Masamune", "Alblanc", "Kabuto", "Nicanora", "Raissa", "Alexandrius"]
+
 //Funciones varias
 
 function elementoAleatorio(array) {
@@ -101,4 +106,4 @@ STATUS_MANAGER.checkStatus(Terra, "final");
 STATUS_MANAGER.checkStatus(Terra, "final");
 STATUS_MANAGER.checkStatus(Terra, "final"); */
 
-export { comenzar, reiniciar, Terra, elementoAleatorio}
+export { comenzar, reiniciar, Terra, elementoAleatorio, heroes}

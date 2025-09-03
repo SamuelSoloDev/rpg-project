@@ -23,9 +23,7 @@ class Jugadores {
       def: [],
       magia: [],
       res: [],
-      vel: [
-        { nombre: "acelerado", duracion: 5, valorEfecto: 0.3 }
-      ],
+      vel: [],
       critRate: [],
       critDamage: []
     };
@@ -41,6 +39,12 @@ class Jugadores {
       critRate: [],
       critDamage: []
     };
+    this.signals = {
+      onAttack: [],
+      onTakeDamage: [],
+      onCastSpell: [],
+      onUseAbilitie: []
+    }
     this.status = {};
     this.nombre = nombre;
     this.grupo = grupo;
@@ -102,6 +106,7 @@ class Jugadores {
   }
 
   recibirDamage(daño) {
+
     this.vida -= daño;
   }
 
@@ -149,6 +154,10 @@ class Jugadores {
     total = this[stat] + buff - debuff;
     return total;
   }
+
+  asignarSignal(tipoSeñal, señal){
+    this.tipoSeñal
+  }
 }
 
 
@@ -171,5 +180,48 @@ class NPC extends Jugadores {
     ];
   }
 }
+
+class Heroe extends Jugadores {
+  constructor({
+    heroe
+  }){
+  super({nombre, grupo, vida, mana, atq, def, magia, res, vel});
+  this.heroe = heroe;
+  this.habilidades = null;
+  this.magias = null;
+  }
+  aprenderHabilidades(listaHabilidades){
+
+  }
+
+  aprenderMagias(listaDeMagias){
+
+  }
+}
+
+
+const Alexandrius = {
+  nombre: "Alexandrius Ingmar Sepulcri",
+  grupo: "aliado",
+  vida: 120,
+  mana: 100,
+  atq: 24,
+  def: 40,
+  magia: 28,
+  res: 23,
+  vel: 9,
+  habilidades: {
+
+  },
+  magias: {
+
+  },
+  signals: {
+    nombre: "valentia",
+    efecto: () => {}
+  }
+}
+
+
 
 export {Jugadores, NPC}
