@@ -1,4 +1,4 @@
-import turnManager from './turnManager.js';
+import turnManager from '../turnManager.js';
 
 
 const actionManager = {

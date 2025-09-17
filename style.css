@@ -41,13 +41,22 @@ html, body {
 
 
 
+/*Combate*/
+
+.combate{
+  display: flex;
+  border: 2px solid green;
+  height: 100%;
+  width: 100%;
+  gap: 3px;
+}
+
 
 /*Narrador*/
 
 #narrador{
   position: absolute;
   top: 0;
-
 }
 
 
@@ -74,9 +83,6 @@ button {
  margin-right: 100px;
 }
 
-#Terra{
-  background: brown;
-}
 
 .hpBar{
   background: green;
@@ -106,6 +112,15 @@ button {
   border: 1px solid black;
 }
 
+.team-holder{
+  display: flex;
+  flex-direction: column;
+  width: 20%;
+  margin: 20px;
+}
+
 #enemigos {
+  right: 1px;
+  position: absolute;
   border: 1px solid black;
 }

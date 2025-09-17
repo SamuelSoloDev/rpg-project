@@ -45,19 +45,41 @@ const VENENO = new Status({
   nombre: "Veneno",
   duracion: 2,
   efecto: function (personaje) {
-    console.log(`${personaje.nombre} está envenenado`);
+     let damage = personaje.vida * 0.15;
+    personaje.recibirDamage(damage);
   },
   ritmo: "final"
 });
+
+const QUEMADURA = new Status({
+  nombre: "Quemadura",
+  duracion: 5,
+  efecto: function (personaje) {
+    let damage = 10 + (personaje.vida * 0.05)
+    personaje.recibirDamage(damage)
+    console.log(`Me han quemado  ahora tengo ${personaje.vida} de vida`);
+
+  },
+  ritmo: "final"
+})
 
 const SANGRADO = new Status({
   nombre: "Sangrado",
   duracion: 4,
   efecto: function (personaje) {
-    let damage = 10 + personaje.vida * 0.1;
-    personaje.recibirdamage(damage);
+    let damage = 5 + personaje.vida * 0.10;
+    personaje.recibirDamage(damage);
   }
 });
+
+const PROVOCAR = new Status({
+  nombre: "Provocar",
+  duracion: 2,
+  efecto: function (personaje) {
+    console.log("actualmente, mi arquitectura no permite un efecto similar `provocar` unu");
+  },
+  ritmo: "final"
+})
 
 const STATUS_MANAGER = {
   checkStatus(personaje, ritmo){
@@ -120,4 +142,4 @@ const STATUS_MANAGER = {
   }
 }
 
-export {CONGELAR, VENENO, STATUS_MANAGER}
+export {CONGELAR, VENENO, STATUS_MANAGER, PROVOCAR, QUEMADURA, SANGRADO}

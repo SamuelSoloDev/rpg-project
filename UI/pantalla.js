@@ -1,4 +1,4 @@
-import {reiniciar, comenzar} from './main.js';
+import {reiniciar, comenzar} from '../main.js';
 
 const screen = {
   pantalla: document.getElementById("screen"),

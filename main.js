@@ -1,12 +1,13 @@
-import menuPersonaje from "./menuUi.js"
+import menuPersonaje from "./UI/menuUi.js"
 import turnManager from './turnManager.js';
-import screen from "./pantalla.js";
-import{pjInterface, actualizarUi} from './personajeInterface.js';
-import {Jugadores, NPC} from './Jugadores/personaje.js'
+import screen from "./UI/pantalla.js";
+import{pjInterface, actualizarUi} from './Jugadores/personajeInterface.js';
+import {Jugadores, NPC, ValentiaSignal} from './Jugadores/personaje.js'
 import iaNpc from './Jugadores/IaNpc.js';
 import { CONGELAR, STATUS_MANAGER, VENENO } from "./buff_and_states/status.js";
 import { MODIFIER_MANAGER, PRISA, FRENO } from "./buff_and_states/modifier.js";
-
+import { FABRICA } from "./Jugadores/fabrik.js";
+import { MoldeAlexandrius } from "./Jugadores/heroes.js";
 
 
 //Heroes
@@ -19,25 +20,10 @@ function elementoAleatorio(array) {
   return array[indice];
 }
 
+const Alexandrius = FABRICA.crearHeroe("Heroe", MoldeAlexandrius)
 
-const Terra = new Jugadores({
-  nombre: "Terra",
-  grupo: "aliado",
-  vida: 130,
-  mana: 100,
-  atq: 130,
-  magia: 20,
-  vel: 30});
 
-const Sora = new Jugadores({
-  nombre: "Sora",
-  grupo: "aliado",
-  vida: 120,
-  mana: 50,
-  atq: 130,
-  magia: 20,
-  vel: 30
-})
+
 
 const Heartless = new NPC({
   nombre: "Heartless",
@@ -46,7 +32,7 @@ const Heartless = new NPC({
   mana: 50,
   atq: 20,
   magia: 30,
-  vel: 21,
+  vel: 24,
   comportamiento: "fulminador"
 });
 
@@ -57,7 +43,7 @@ const Xehanort = new NPC(
    mana: 50,
    magia: 50,
    atq: 20,
-   vel: 22,
+   vel: 27,
    comportamiento: "fulminador"
   });
 
@@ -65,8 +51,7 @@ const Xehanort = new NPC(
 
 
 
-turnManager.agregar(Terra)
-turnManager.agregar(Sora)
+turnManager.agregar(Alexandrius)
 turnManager.agregar(Xehanort)
 turnManager.agregar(Heartless)
 
@@ -88,14 +73,7 @@ function reiniciar(){
   comenzar();
 }
 
-PRISA.aplicarModificador(Terra);
-FRENO.aplicarModificador(Terra);
-let array = []
-
-console.log(array.length);
-
-
-//MODIFIER_MANAGER._buscarBuff(Terra);
+comenzar();
 
 
  //tratando de ponerlo a prueba
@@ -106,4 +84,4 @@ STATUS_MANAGER.checkStatus(Terra, "final");
 STATUS_MANAGER.checkStatus(Terra, "final");
 STATUS_MANAGER.checkStatus(Terra, "final"); */
 
-export { comenzar, reiniciar, Terra, elementoAleatorio, heroes}
+export { comenzar, reiniciar, elementoAleatorio, heroes}

@@ -1,11 +1,11 @@
-import {Terra, elementoAleatorio} from './main.js';
-import menuPersonaje from './menuUi.js';
-import screen from "./pantalla.js";
-import{pjInterface, actualizarUi} from './personajeInterface.js';
-import actionManager from "./gestorDeAccion.js";
+import { elementoAleatorio} from './main.js';
+import menuPersonaje from './UI/menuUi.js';
+import screen from "./UI/pantalla.js";
+import{pjInterface, actualizarUi} from './Jugadores/personajeInterface.js';
+import actionManager from "./buff_and_states/gestorDeAccion.js";
 import {Jugadores, NPC} from './Jugadores/personaje.js'
 import iaNpc from "./Jugadores/IaNpc.js";
-import { ataque } from "./abilities.js";
+import { ataque } from "./buff_and_states/abilities.js";
 import { STATUS_MANAGER } from "./buff_and_states/status.js";
 
 const turnManager = {
@@ -106,10 +106,16 @@ const turnManager = {
        accion = await menuPersonaje.uiPersonaje(personaje);
        console.log(accion);
 
-       let posiblesObjetivos = actionManager.obtenerPosiblesObjetivos(personaje, accion);
+       if (accion.rango === "propio") {
+        objetivo = personaje;
+       }
+       else {
+        let posiblesObjetivos = actionManager.obtenerPosiblesObjetivos(personaje, accion);
        console.log(posiblesObjetivos);
 
        objetivo = await menuPersonaje.uiSelector(posiblesObjetivos);
+       }
+
       }
     else {
       let accionElegida = iaNpc.elegirAccion(personaje);
@@ -120,6 +126,8 @@ const turnManager = {
     }
 
     accion.usar(personaje, objetivo);
+    console.log("se ejecutó la acción");
+
     this.terminarTurno(personaje);
   },
 

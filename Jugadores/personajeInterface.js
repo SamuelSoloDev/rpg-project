@@ -1,5 +1,5 @@
-import menuPersonaje from "./menuUi.js";
-import turnManager from './turnManager.js';
+import menuPersonaje from "../UI/menuUi.js";
+import turnManager from '../turnManager.js';
 
 const pjInterface = {
   equipoAliado: document.getElementById("aliados"),
@@ -46,17 +46,18 @@ const pjInterface = {
       return pjContainer;
   },
 
+
   renderVitBar(personaje){
     const hpBar = document.createElement("div");
 
-    hpBar.classList.add("hpBar", `hp--${personaje.nombre}`);
+    hpBar.classList.add("hpBar", `hp--${personaje.nombre}`, "bar");
 
     return hpBar;
   },
 
   renderChargeBar(personaje){
     const chargeBar = document.createElement("div");
-    chargeBar.classList.add("chargeBar", `charge--${personaje.nombre}`);
+    chargeBar.classList.add("chargeBar", `charge--${personaje.nombre}`, "bar");
     return chargeBar;
   },
   renderAllPj(){
@@ -72,7 +73,7 @@ const actualizarUi = {
   vitBar(personaje){
     const hpBar = document.querySelector(`.hp--${personaje.nombre}`)
     hpBar.textContent = personaje.vida;
-    hpBar.style.width = `${parseFloat(((personaje.vida / 100) * 100).toFixed(2))}%`;
+    hpBar.style.width = `${parseFloat(((personaje.vida / personaje.maxVida) * 100).toFixed(2))}%`;
   },
 
   chargeBar(personaje){

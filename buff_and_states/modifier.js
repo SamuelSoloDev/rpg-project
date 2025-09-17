@@ -1,6 +1,4 @@
-
-
-class statModifier {
+class StatModifier {
   constructor({
     nombre,
     duracion,
@@ -33,8 +31,16 @@ class statModifier {
   }
 }
 
+const VALENTIA = new StatModifier({
+  nombre: "valentia",
+  duracion: 1,
+  valorEfecto: 0.2,
+  ritmo: "onCastSpell",
+  tipo: "buff",
+  stat: "magia"
+})
 
-const PRISA = new statModifier({
+const PRISA = new StatModifier({
   nombre: "prisa",
   duracion: 3,
   valorEfecto: 1,
@@ -43,14 +49,77 @@ const PRISA = new statModifier({
   stat: "vel"
 })
 
-const FRENO = new statModifier({
+const FRENO = new StatModifier({
   nombre: "freno",
   duracion: 2,
-  valorEfecto: 1,
+  valorEfecto: 0.5,
   ritmo: "inicio",
   tipo: "debuff",
   stat: "vel"
 })
+
+const CORAZA = new StatModifier({
+  nombre: "coraza",
+  duracion: 3,
+  valorEfecto: 0.5,
+  ritmo: "inicio",
+  tipo: "buff",
+  stat: "def"
+})
+
+const FUERZA_FERREA = new StatModifier({
+  nombre: "fuerza ferrea",
+  duracion: 3,
+  valorEfecto: 0.5,
+  ritmo: "final",
+  tipo: "buff",
+  stat: "atq"
+})
+
+const LLAMARADA_DEF = new StatModifier({
+  nombre: "llamarada def",
+  duracion: 4,
+  valorEfecto: 0.3,
+  ritmo: "inicio",
+  tipo: "debuff",
+  stat: "def"
+})
+
+const LLAMARADA_RES = new StatModifier({
+  nombre: "llamarada RES",
+  duracion: 4,
+  valorEfecto: 0.3,
+  ritmo: "inicio",
+  tipo: "debuff",
+  stat: "res"
+})
+
+const POSTURA_DEFENSIVA_DEF = new StatModifier({
+  nombre: "postura defensiva def",
+  duracion: 4,
+  valorEfecto: 0.5,
+  ritmo: "inicio",
+  tipo: "buff",
+  stat: "def"
+})
+
+const POSTURA_DEFENSIVA_RES = new StatModifier({
+  nombre: "postura defensiva res",
+  duracion: 4,
+  valorEfecto: 0.5,
+  ritmo: "inicio",
+  tipo: "buff",
+  stat: "res"
+})
+
+const PROVOCAR_DEBUFF = new StatModifier({
+  nombre: "provocar debuff",
+  duracion: 2,
+  valorEfecto: 0.3,
+  ritmo: "final",
+  tipo: "debuff",
+  stat: "atq"
+});
 
 const MODIFIER_MANAGER = {
   stats: [
@@ -63,17 +132,35 @@ const MODIFIER_MANAGER = {
     "critDamage"
   ],
 
+  reducirModifier(personaje, tipoModifier, ritmo){
+    this.stats.forEach(stat => {
+      // Reducir duración de cada modificador según ritmo
+      personaje[tipoModifier][stat].forEach(m => {
+        if (m.ritmo === ritmo) {
+          m.duracion--;
+        }
+      });
 
-  _buscarBuff(personaje){
-    let buff = null;
-    this.stats.forEach( stat => {
-      if (personaje.buff[stat].length) {
+      // Limpiar modificadores expirados
+      this._deleteModifier(personaje, tipoModifier, stat);
+    });
+  },
 
-      }
-    }
-
-    )
+  _deleteModifier(personaje, tipoModifier, stat){
+    personaje[tipoModifier][stat] = personaje[tipoModifier][stat].filter(m => m.duracion > 0);
   }
 }
 
-export { MODIFIER_MANAGER, PRISA, FRENO}
+export {
+  CORAZA,
+  FUERZA_FERREA,
+  LLAMARADA_DEF,
+  LLAMARADA_RES,
+  POSTURA_DEFENSIVA_DEF,
+  POSTURA_DEFENSIVA_RES,
+  MODIFIER_MANAGER,
+  PRISA,
+  FRENO,
+  VALENTIA,
+  PROVOCAR_DEBUFF
+}

@@ -1,4 +1,4 @@
-import actionManager  from "./gestorDeAccion.js";
+import actionManager  from "../buff_and_states/gestorDeAccion.js";
 
 /* hice este cambio y me salió este error: menuUi.js:110 Uncaught (in promise) ReferenceError: resolve is not defined
     at HTMLButtonElement.<anonymous> (menuUi.js:110:5)

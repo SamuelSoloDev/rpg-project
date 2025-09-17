@@ -1,8 +1,8 @@
-import { ataque, curar } from "../abilities.js";
+import { ataque, curar } from "../buff_and_states/abilities.js";
 import { elementoAleatorio } from "../main.js";
 import { NPC } from "./personaje.js";
 import  turnManager  from "../turnManager.js";
-import actionManager from "../gestorDeAccion.js";
+import actionManager from "../buff_and_states/gestorDeAccion.js";
 
 
 

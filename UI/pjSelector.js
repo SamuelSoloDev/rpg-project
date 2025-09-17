@@ -1,4 +1,4 @@
-import { heroes } from "./main.js";
+import { heroes } from "../main.js";
 
 const COMPONENT_MANAGER = {
   base: document.getElementById("base"),

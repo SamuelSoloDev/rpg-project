@@ -1,6 +1,7 @@
-import { ataque, curar } from "../abilities.js";
+import { ataque, curar } from "../buff_and_states/abilities.js";
 import turnManager from '../turnManager.js';
-import{pjInterface, actualizarUi} from '../personajeInterface.js';
+import{pjInterface, actualizarUi} from './personajeInterface.js';
+import { VALENTIA } from "../buff_and_states/modifier.js";
 
 class Jugadores {
   constructor({ nombre, grupo, vida, mana, atq, def, magia, res, vel }) {
@@ -24,6 +25,7 @@ class Jugadores {
       magia: [],
       res: [],
       vel: [],
+      precision: [],
       critRate: [],
       critDamage: []
     };
@@ -36,14 +38,16 @@ class Jugadores {
       magia: [],
       res: [],
       vel: [],
+      precision: [],
       critRate: [],
       critDamage: []
     };
     this.signals = {
       onAttack: [],
       onTakeDamage: [],
+      onTakeDamageFromEnemy:[],
       onCastSpell: [],
-      onUseAbilitie: []
+      onUseAbility: []
     }
     this.status = {};
     this.nombre = nombre;
@@ -55,16 +59,13 @@ class Jugadores {
     this.magia = magia;
     this.res = res;
     this.vel = vel;
+    this.precision = 100;
     this._vivo = this._vida > 0;
     this._carga = 0;
     this.critRate = 0;
     this.critDamage = 1.75;
-
-    this.magias = {
-      fuego: { texto: "Fuego", valor: "magia_fuego" },
-      hielo: { texto: "Hielo", valor: "magia_hielo" },
-      trueno: { texto: "Trueno", valor: "magia_trueno" }
-    };
+    this.habilidades = null;
+    this.magias = null;
   }
 
   get opciones() {
@@ -72,11 +73,8 @@ class Jugadores {
       { texto: "Atacar", valor: ataque },
       { texto: "Magia", subopciones: Object.values(this.magias) },
       {
-        texto: "Objeto",
-        subopciones: [
-          { texto: "Poción", valor: "usar_pocion" },
-          { texto: "Éter", valor: "usar_eter" }
-        ]
+        texto: "Habilidades",
+        subopciones: Object.values(this.habilidades)
       }
     ];
   }
@@ -85,14 +83,20 @@ class Jugadores {
   get vivo() { return this._vivo; }
 
   set vida(valor) {
-    this._vida = valor;
-    if (this._vida <= 0 && this._vivo) this._vivo = false;
-    if (this._vida < 0) this._vida = 0;
-    actualizarUi.vitBar(this);
-    turnManager.verificarEstado();
+  // 🔹 Convertir a entero primero
+  this._vida = Math.round(valor);
+
+  if (this._vida <= 0 && this._vivo) this._vivo = false;
+  if (this._vida < 0) this._vida = 0;
+  if (this._vida > this.maxVida) {
+    this._vida = this.maxVida;
   }
+  actualizarUi.vitBar(this);
+  turnManager.verificarEstado();
+}
 
   //Getter de stats
+  get maxVida() {return this.base.vida}
   get totalAtq() { return this.statTotal("atq"); }
   get totalDef() { return this.statTotal("def"); }
   get totalMagia() { return this.statTotal("magia"); }
@@ -105,10 +109,57 @@ class Jugadores {
     if (this._carga > 100) this._carga = 100;
   }
 
-  recibirDamage(daño) {
+  actuar(objetivo, efecto, tipo) {
+  console.log("[Heroe.actuar]", this.nombre, { objetivo, efecto, tipo });
+  let acciones = {
+    magia: (objetivo, efecto) => this.cast(objetivo, efecto),
+    habilidad: (objetivo, efecto) => this.useAbility(objetivo, efecto),
+    ataque: (objetivo, efecto) => this.atacar(objetivo, efecto)
+  };
 
-    this.vida -= daño;
+  if (!acciones[tipo]) {
+    console.error("[Heroe.actuar] Tipo no válido:", tipo);
+    return;
   }
+
+  acciones[tipo](objetivo, efecto);
+}
+
+
+  atacar(enemigo){
+    this.ejecutarSignal("onAttack", {usuario: this})
+    enemigo.recibirDamage(this.totalAtq, this)
+  }
+
+  cast(objetivo, magia){
+    this.ejecutarSignal("onCastSpell", {usuario: this})
+      magia(this, objetivo);
+
+  }
+
+  useAbility(objetivo, habilidad) {
+  console.log("[useAbility] usuario:", this.nombre, "objetivo:", objetivo, "habilidad:", habilidad);
+  if (!objetivo) {
+    console.error("[useAbility] ⚠️ Objetivo undefined", habilidad);
+    return;
+  }
+    habilidad(this, objetivo)
+}
+
+
+  recibirDamage(daño, agresor) {
+  if (this._estaContraAtacando) return;
+  console.log("he sido dañado");
+
+
+  this.vida -= daño;
+  actualizarUi.vitBar(this);
+  this._estaContraAtacando = true;
+  this.ejecutarSignal("onTakeDamageFromEnemy", {usuario: this, objetivo: agresor});
+  this.ejecutarSignal("onTakeDamage", {usuario: this});
+  this._estaContraAtacando = false;
+}
+
 
   cargar() {
     this.carga += this.vel;
@@ -155,11 +206,24 @@ class Jugadores {
     return total;
   }
 
+  aprenderHabilidades(listaHabilidades) {
+    this.habilidades = listaHabilidades;
+  }
+
+  aprenderMagias(listaDeMagias) {
+    this.magias = listaDeMagias;
+  }
+
+  ejecutarSignal(tipoSeñal, parametros){
+    this.signals[tipoSeñal].forEach(signal => {
+      signal.ejecutar(parametros);
+    })
+  }
+
   asignarSignal(tipoSeñal, señal){
-    this.tipoSeñal
+    this.signals[tipoSeñal].push(señal);
   }
 }
-
 
 
 class NPC extends Jugadores {
@@ -169,59 +233,45 @@ class NPC extends Jugadores {
     vida,
     mana,
     atq,
+    def,
     magia,
+    res,
     vel,
-    comportamiento = "aleatorio" }) {
-    super({ nombre, grupo, vida, mana, atq, magia, vel });
-    this.comportamiento = comportamiento; // puede ser una función o una cadena que indique qué hacer
+    monstruo,
+    comportamiento
+  }) {
+    super({ nombre, grupo, vida, mana, atq, def, magia, res, vel });
+    this.monstruo = monstruo;
+    this.comportamiento = comportamiento;
     this.acciones = [
       { nombre: "atacar", accion: ataque },
       { nombre: "curar", accion: curar}
-    ];
+    ] // 👈 importante: se conserva
   }
+
+
 }
+
 
 class Heroe extends Jugadores {
-  constructor({
-    heroe
-  }){
-  super({nombre, grupo, vida, mana, atq, def, magia, res, vel});
-  this.heroe = heroe;
-  this.habilidades = null;
-  this.magias = null;
-  }
-  aprenderHabilidades(listaHabilidades){
-
-  }
-
-  aprenderMagias(listaDeMagias){
-
-  }
-}
-
-
-const Alexandrius = {
-  nombre: "Alexandrius Ingmar Sepulcri",
-  grupo: "aliado",
-  vida: 120,
-  mana: 100,
-  atq: 24,
-  def: 40,
-  magia: 28,
-  res: 23,
-  vel: 9,
-  habilidades: {
-
-  },
-  magias: {
-
-  },
-  signals: {
-    nombre: "valentia",
-    efecto: () => {}
+  constructor({ nombre, grupo, vida, mana, atq, def, magia, res, vel, }) {
+    super({ nombre, grupo, vida, mana, atq, def, magia, res, vel });
+    this.habilidades = null;
+    this.magias = null;
   }
 }
 
 
 
-export {Jugadores, NPC}
+
+const ValentiaSignal = {
+  nombre: "valentia",
+  ejecutar: function ({usuario}) {
+      VALENTIA.aplicarModificador(usuario);
+      console.log(`La magia de ${usuario.nombre} ha subido a ${usuario.totalMagia}`);
+
+    }
+}
+
+
+export {Jugadores, NPC, ValentiaSignal, Heroe}
