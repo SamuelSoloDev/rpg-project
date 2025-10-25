@@ -15,6 +15,15 @@ Un simulador de combate por turnos en JavaScript inspirado en sistemas de RPG cl
 - ✅ Menús interactivos de acción
 - ✅ Comportamiento básico enemigo (ataque aleatorio)
 - ✅ Detección de condición de victoria o derrota
+- ✅ Feedback visual al hacer daño (numero flotante)
+- ✅ Ya hay 6 personajes jugables
+- ✅ hay 4 enemigos y un jefe con dos fases
+- ✅ Las habilidades funcionan
+- ✅ Hay mecanica de escudos
+- ✅ Hay formula de daño y críticos
+- ✅ Hay selector de personajes
+- ✅ Los estados alterados funcionan
+- ✅ hay pantallas entre combates y de game over/victory
 
 Todo el sistema se encuentra en desarrollo activo.
 
