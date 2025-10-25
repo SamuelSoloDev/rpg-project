@@ -1,8 +1,38 @@
-body{
-  background-color: darkgray;
-  display: flex;
-  color: white;
-  height: 100px
+:root {
+  --radius: 16px;
+  --shadow: 0 10px 30px rgba(0,0,0,.4);
+  --text: #EAEAEA;
+  --muted: #B7B7B7;
+
+  /* Tema base: Abyss */
+  --bg: #0f1622;
+  --surface: #111c2a;
+  --surface-2: #122033;
+  --accent: #FF4FB8;
+
+  --hp: #FF4D4D;
+  --mp: #4FFFE6;
+  --warn: #FFD93D;
+  --ok: #3AFF7A;
+  --border: rgba(255,255,255,0.08);
+
+  --font-title: "Cinzel", serif;
+  --font-body: "Roboto", system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+}
+
+/* Tema alternativo: Abyss */
+html[data-theme="abyss"] {
+  --bg: #0f1622;
+  --surface: #111c2a;
+  --surface-2: #122033;
+  --accent: #FF4FB8;
+  --font-title: "Cinzel", serif;
+  --font-body: "Roboto", system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+}
+
+/* --------- RESETEO Y BASE --------- */
+* {
+  box-sizing: border-box;
 }
 
 html, body {
@@ -10,117 +40,484 @@ html, body {
   padding: 0;
   height: 100%;
   width: 100%;
-  overflow: hidden; /* Opcional: evita scroll */
+  overflow: hidden;
 }
 
-
-/*Pantalla*/
-#screen{
-  position: absolute;
-  display: flex;
-}
-.screen-open{
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* tablero grande + elegidos */
+  grid-template-rows: 100dvh;
+  gap: 10px;
   height: 100dvh;
-  width: 100vw;
-  background: black;
+  grid-template-areas: "elegidos personajes";
 }
 
-.button--start{
-  width: 60vw;
-  height: 10vh;
+/* ---- TABLERO DE HÉROES ---- */
+#personajes {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  border: 2px solid var(--border);
+  width: 100%;
+  height: 100%;
+  list-style: none;
+  padding: 10px;
+  margin: 0;
+  overflow-y: auto;
+  background: var(--surface);
+  grid-area: personajes;
+}
+#personajes .heroe{
+  max-width: 290px;
+  max-height: 177px;
+}
+.heroe {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  grid-template-rows: auto auto;
+  place-items: center;
+  gap: 1em;
+  border: 2px solid var(--border);
+  background: var(--surface-2);
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+
+}
+
+.clase-heroe {
+  grid-column: 2;
+  font-family: var(--font-title);
+}
+
+.retrato {
+  width: 120%;
+  margin-left: 1em;
+  aspect-ratio: 1 / 1;
+  grid-row: 1 / 3;
+  object-fit: contain;
+  border-radius: var(--radius);
+
+  background-size: contain; /* La imagen cubre toda el área */
+  background-position: center; /* Centrada */
+  background-repeat: no-repeat; /* No se repite */
+  background-attachment: fixed; /* (Opcional) Fija el fondo al hacer scroll */
+
+}
+
+
+.botonAgregar {
+  grid-column: 1 / 3;
+  width: 100%;
+  background: var(--accent);
+  border: none;
+  color: var(--text);
+  padding: 0.5em;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.botonAgregar:disabled {
+  background: grey;
+}
+
+/* ---- TABLERO DE ELEGIDOS ---- */
+#elegidos {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  grid-template-areas:
+    "listaElegidos"
+    "contenedorBotones";
+  gap: 10px;
+  height: 100vh;
+  background: #111c2a;
+  padding: 10px;
+}
+
+#lista-elegidos {
+  grid-area: listaElegidos;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* dos columnas del mismo tamaño */
+  gap: 1em;
+  width: 100%;
+  height: 100%;
   margin: auto;
 }
 
-/* Cuando la pantalla está en horizontal (landscape) */
-@media screen and (orientation: landscape) {
-  button {
-    width: 30vw;
-    height: 15vh;
+.contenedor-botones {
+  grid-area: contenedorBotones;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+
+
+#elegidos .heroe{
+ box-sizing: border-box;
+ padding: 4%;
+ max-width: 380px;
+ max-height: 250px;
+}
+
+#elegidos .btn{
+  border-radius: 10px;
+background: #fff;
+  border: none;
+  padding: 10px 20px;
+  display: inline-block;
+  font-size: 15px;
+  font-weight: 600;
+  width: 120px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transform: skew(-21deg);
+  margin-left: 10%;
+  margin-right: 10%;
+}
+
+/* From Uiverse.io by mrhyddenn */
+
+.spanBtn {
+  display: inline-block;
+  transform: skew(21deg);
+}
+
+#elegidos .btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 100%;
+  left: 0;
+  background: rgb(20, 20, 20);
+  opacity: 0;
+  z-index: -1;
+  transition: all 0.5s;
+  border-radius: 10px;
+}
+
+#elegidos .btn:hover {
+  color: #fff;
+}
+
+#elegidos .btn:hover::before {
+  left: 0;
+  right: 0;
+  opacity: 1;
+}
+
+
+/* ---- PANTALLA DE INICIO ---- */
+.startScreen {
+  box-shadow: 10px 10px 50px 10px #333 inset, -10px -10px 50px 10px #333 inset;
+}
+
+.screen{
+  width: 100vw;
+  height: 100dvh;
+  display: flex;
+  justify-content: center;
+}
+
+@keyframes startTitle {
+  50% {
+    color: #FF4FB8;
   }
 }
 
-
-
-/*Combate*/
-
-.combate{
-  display: flex;
-  border: 2px solid green;
-  height: 100%;
-  width: 100%;
-  gap: 3px;
+#mainLogo {
+  width: 200px;
+  height: 200px;
+  background-image: url("./logo.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
-
-/*Narrador*/
-
-#narrador{
+#startBtn {
+  font-family: var(--font-title);
+  color: #EAEAEA;
+  animation: startTitle 1.4s infinite;
+  text-shadow:
+    1px 1px 0 #555555,
+   -1px 1px 0 #555555,
+    1px -1px 0 #555555,
+   -1px -1px 0 #555555,
+    0 1px 0 #555555,
+    1px 0 0 #555555,
+   -1px 0 0 #555555,
+    0 -1px 0 #555555;
   position: absolute;
-  top: 0;
+  bottom: 10px;
+  align-self: center;
+  border-radius: 5px;
+}
+
+#startContainer {
+  border: 10px solid white;
+  position: absolute;
+  bottom: 10px;
+  width: auto;
+  height: 20px;
+  display: flex;
+  justify-content: center;
+  margin: auto;
 }
 
 
+@media (min-width: 900px) {
+  body{
+    grid-template-columns: 2fr 0.7fr; /* tablero grande + elegidos */
+  }
+  #lista-elegidos{
+    padding-left: 5%;
+  }
+  #startContainer {
+    width: 100px;
+    height: 100px;
+    bottom: 20%;
+    margin: auto;
+    border: none;
+  }
+  #startBtn{
+    bottom: auto;
+    background: transparent;
+    border: none;
+    font-size: 100px;
+    margin: auto;
+  }
+  #mainLogo{
+    width: 400px;
+    height: 400px;
+  }
+}
+
+/* ---- PANTALLA ENTRE COMBATES ---- */
+
+.midGameScreen{
+  background: #333;
+}
+
+.estancia{
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--accent) ;
+  font-size: 30px;
+  height: 100px;
+  width: 500px;
+  border: 1px solid violet;
+  display: flex;
+}
+
+
+/* ---- INTERFAZ DE COMBATE ---- */
+
+
+#combate{
+  height: 100dvh;
+  width: 100vw;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: auto minmax(0,420px) 1fr;
+  padding: 0;
+  background-image: url(battle_bg.png);
+  background-size: cover; /* La imagen cubre toda el área */
+  background-position: center; /* Centrada */
+  background-repeat: no-repeat; /* No se repite */
+  background-attachment: fixed; /* (Opcional) Fija el fondo al hacer scroll */
+
+}
+
+#narrador {
+  width: 30%;
+  height: 100%;
+  margin: auto;
+  border: 1px solid darkred;
+  margin-bottom: 0;
+  margin-top: 0;
+  text-align: center;
+  padding: 0;
+}
+
+.menu{
+  background: var(--surface);
+}
 
 #menu{
-  position: absolute;
-  bottom: 0;
-  border: 1px solid black ;
-  height: 30vh;
-  width: 100vw;
-  display: flex;
+  border-top: 3px solid var(--accent);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  max-height: 168px;
+  background: var(--bg);
 }
 
 #actionMenu{
-  display: flex;
-  border: 1px solid black ;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 4%;
+  padding: 2%;
+  border: 1px solid transparent;
+  grid-column: 2;
+  grid-row: 1/3;
 }
 
-button {
-  width: 20%;
-  height: 30%;
-}
-#aliados{
- margin-right: 100px;
+.menu--text{
+  margin-left: 3%;
 }
 
-
-.hpBar{
-  background: green;
-}
-
-.chargeBar{
-  height: 10px;
-  width: 10px;
-  background: #079;
-}
-
-.oculto{
-  display: none;
+.mp{
+  color: var(--mp);
 }
 
 .botonMenu{
-  width: 70%;
-  height: 70%;
-  position: relative;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: white;
+  box-sizing: border-box;
 }
 
-.nopuede{
-  background: red;
+.botonMenu:hover{
+  border: 1px solid var(--accent);
 }
 
-#aliados {
-  border: 1px solid black;
+.Habilidades{
+  grid-column: 1;
+}
+
+#btn--volver{
+  grid-column: 3;
+  grid-row: 1;
+}
+
+.msjEspera{
+  grid-column: 1/3;
+}
+
+#teamContainer{
+  display: flex;
+  border: 1px solid transparent;
+  box-sizing: border-box;
 }
 
 .team-holder{
-  display: flex;
-  flex-direction: column;
-  width: 20%;
-  margin: 20px;
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  width: 50%;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
 }
 
-#enemigos {
-  right: 1px;
+
+
+#aliados{
+ border: 1px solid transparent;
+}
+
+#enemigos{
+ border: 1px solid transparent;
+ position: relative;
+
+}
+
+/* ---- Interfaz de personaje ---- */
+
+.barContainer{
+  border: 0.1em solid #888;
+  border-radius: 5px;
+  max-width: 120px;
+  background: #2f3336;
+  padding: 0;
+  margin: 0;
+  height: 14px;
+  text-align: center;
+  display: flex;
+  align-content: center;
+}
+
+.spriteCanvas{
+  margin: 0;
+}
+.enemigo{
+  transform: scaleX(-1);
+}
+
+.sprite--Draenhal{
+  transform: none;
+}
+
+#Draenhal .barContainer{
+  max-width: 150px;
+}
+
+
+
+.barContainer--hp{
+  background: rgb(102, 1, 1);
+  height: 18px;
+  position: relative;
+}
+
+.hpValue{
   position: absolute;
-  border: 1px solid black;
+  right: 40%;
+  margin: 0;
+  top: -16%;
+  font-size: 90%;
+  height: 100%;
+  padding: 0;
+}
+
+.hpBar{
+  background: rgb(2, 92, 2);
+  padding: 0;
+}
+
+.chargeBar{
+  background: rgb(0, 38, 255);
+}
+
+.nameTag{
+  margin: 0;
+  display: none;
+}
+
+span{
+  position: absolute;
+  color: red;
+  border: 1 px solid darkred;
+}
+
+/* Daño flotante */
+.animation--damage {
+  position: absolute;
+  color: #ff4040;
+  font-weight: 900;
+  font-size: 24px;
+  text-shadow: 0 0 6px #ff0000;
+  opacity: 0;
+  animation: floatUp 0.8s ease-out forwards;
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(0); opacity: 1; }
+  80% { transform: translateY(-50px); opacity: 1; }
+  100% { transform: translateY(-70px); opacity: 0; }
+}
+
+/* ---- ELEMENTOS GENERALES ---- */
+button, a {
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
 }

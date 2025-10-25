@@ -1,0 +1,6 @@
+**
+Hay que hacer que el Gestion de accion pueda tener la referencia de los enemigos y aliados vivos.
+
+El CSS para la interfaz de combate está COMPLETAMENTE ROTO.
+
+Aún no se sabe sí Game y Combate funcionan.

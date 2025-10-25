@@ -1,0 +1,203 @@
+1)Que los estados congelar y Aturdir funcionen [Listo]
+2)Quitar los Alert [Aparentemente Listo]
+3)Que las acciones demoren aunque sea un poco para que tenga un ritmo
+4)Poner los sprites en la selección de personajes
+5)Acomodar los sprites para los enemigos
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Perfecto, gracias por hacer lo que te pedí. Ahora quiero que analices el concepto de mis personajes.
+
+🔥 Alexandrius Ingmar Sepulcri (Caballero Ígneo) 🔥
+
+✨ Pasiva:
+- Adquiere valentía cuando recibe o bloquea daño.
+- Cada carga de valentía aumenta su siguiente hechizo un +10% de efectividad.
+- Devuelve daño de fuego al recibir daño.
+
+🪄 Hechizos:
+- Coraza
+- Bola de fuego
+- Viento cortante
+- Fuerza de hierro
+
+⚔️ Habilidades:
+- Provocar: reduce el ataque enemigo y los hace atacar a Alex (2 turnos).
+- Postura defensiva: aumenta ambas resistencias un 50% (3 turnos).
+- Llamarada: hace daño, reduce defensas y puede causar quemaduras.
+- Espada del juicio: consume mucho maná y hace gran daño.
+
+
+🌲 Raissa Blackwood (Bruja del Bosque) 🌲
+
+✨ Pasiva:
+- Mayor probabilidad de causar estados alterados.
+
+🪄 Magias:
+- Bola de fuego
+- Rayo descendente
+- Picos de hielo
+- Drenaje (oscuro)
+{⚡ Estado pendiente: "Parálisis"}
+
+⚔️ Habilidades:
+- Nube de gas: daño en área + probabilidad de envenenar.
+- Agujero negro: drenaje en área.
+- Umbrasemillas: causa ceguera y/o envenenamiento.
+- Aspir: roba maná.
+
+
+⛪ Alblanc (Sacerdotisa) ⛪
+
+✨ Pasiva:
+- Recupera más maná.
+
+🪄 Hechizos:
+1. Cura (cura aliados).
+2. Sanctus (gran daño, alto costo).
+3. Revitalia (regeneración).
+4. Coraza (buff de armadura temporal).
+
+⚔️ Habilidades:
+- Muro de piedra: aumenta resistencia mágica de un aliado.
+- Temblor: daño en área + ralentiza.
+- Roca: daño a un objetivo + ralentiza.
+- Armadura afilada: escudo = 100% vida de Alblanc +
+devuelve daño físico y causa sangrado hasta romperse (alto costo).
+
+
+❄️ Masamune (Asesino Gélido) ❄️
+
+✨ Pasiva:
+- Golpea dos veces.
+
+🪄 Hechizos:
+- Picos de hielo
+- Rayo descendente
+- Bola de fuego
+- Viento cortante
+
+⚔️ Habilidades:
+- Tornado
+- Cercenamiento gélido: daño en área + escudo por enemigos alcanzados (puede congelar).
+- Furia de dragón: buff de velocidad, magia y ataque.
+- Invierno dracónico: daño en área + 50% probabilidad de congelar.
+
+
+🏹 Nicanora (Arquera) 🏹
+
+✨ Pasiva:
+- Mayor daño crítico.
+
+🪄 Hechizos:
+- Rayo descendente
+- Bola de fuego
+- Escudo
+- Fuerza de acero
+
+⚔️ Habilidades:
+- Tiro elegido: ataque de rayo, siempre crítico.
+- Concentración: aumenta probabilidad y daño crítico.
+- Cañón destructor: gran daño crítico, puede paralizar.
+- Tormenta de flechas: daño en área + posibilidad de parálisis.
+
+
+🪨 Kabuto (Guerrero de los Vientos) 🪨
+
+✨ Pasiva:
+- Su poder aumenta cuanto menor sea su vida.
+
+🪄 Hechizos:
+- Viento cortante
+- Drenaje
+- Estalactita
+- Prisa
+
+⚔️ Habilidades:
+- Viento afín: +50% velocidad del equipo (3 turnos).
+- Impulso vengativo: consume vida para causar gran daño.
+- Corte aéreo: causa daño y aturde al enemigo.
+- Venganza: daño basado en la vida que le falte a Kabuto.
+
+
+
+JEFE
+
+/* ------------------- HABILIDADES DEL DESTRUCTOR ------------------- */
+
+const Golpe_Destructor = new Habilidad({
+  nombre: "Golpe Destructor",
+  efecto: (usuario, objetivo) => {
+    objetivo.recibirDamageFisico(usuario.totalAtq * Golpe_Destructor.escalado, usuario);
+  },
+  tipo: "habilidad",
+  naturaleza: "ofensivo",
+  rango: "unico",
+  precision: 95,
+  escalado: 1.8 // daño muy alto a un solo objetivo
+});
+
+const Aniquilacion = new Habilidad({
+  nombre: "Aniquilación",
+  efecto: (usuario, objetivo) => {
+    // daño masivo a todos
+    objetivo.recibirDamageFisico(usuario.totalAtq * Aniquilacion.escalado, usuario);
+  },
+  tipo: "habilidad",
+  naturaleza: "ofensivo",
+  rango: "todos",
+  precision: 90,
+  escalado: 2.2 // daño altísimo
+});
+
+const Disipar_Rugido = new Habilidad({
+  nombre: "Disipar Rugido",
+  efecto: (usuario, objetivo) => {
+    // elimina todos los buffs activos
+    objetivo.limpiarModificadores("buff");
+  },
+  tipo: "habilidad",
+  naturaleza: "debuff",
+  rango: "todos",
+  precision: 100
+});
+
+// Pasiva: se implementa con signals
+const SED_DE_SANGRE = {
+  nombre: "Sed de Sangre",
+  trigger: "onCriticalReceived",
+  efecto: (usuario) => {
+    const buff = new StatModifier({
+      nombre: "Sed de Sangre ATQ",
+      duracion: 3,
+      valorEfecto: 0.1, // +10% ATQ
+      ritmo: "inicio",
+      tipo: "buff",
+      stat: "atq"
+    });
+    buff.aplicarModificador(usuario);
+  }
+};

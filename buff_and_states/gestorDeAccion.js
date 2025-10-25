@@ -1,35 +1,56 @@
-import turnManager from '../turnManager.js';
-
-
 const actionManager = {
+  aliados: null,
+  enemigos: null,
+
+  get aliadosVivos() {
+    return this.aliados.filter(p => p.vivo);
+  },
+
+  get enemigosVivos() {
+    return this.enemigos.filter(p => p.vivo);
+  },
+
+
+  obtenerJugadores(aliados, enemigos){
+    this.aliados = aliados;
+    this.enemigos = enemigos;
+    console.log("###############################################################");
+    console.log("###############################################################");
+    console.log(`ALIADOS:   ${this.aliados}`);
+    console.log(`ENEMIGOS: ${this.enemigos}`);
+
+
+
+
+  },
   obtenerPosiblesObjetivos(personaje, accion) {
     let naturaleza = null;
     let grupo = personaje.grupo;
-    console.log(accion.naturaleza); //
+    //console.log(accion.naturaleza); //
 
     //el problema empieza por acá
     if (typeof accion === 'string') {
-      console.log("es string");
+      //console.log("es string");
 
       naturaleza = accion;
     }
     if (typeof accion === 'object') {
-      console.log("es objeto");
+      //console.log("es objeto");
       naturaleza = accion.naturaleza;
-      console.log(accion.naturaleza);
+     // console.log(accion.naturaleza);
     }
-    console.log(accion); //
+    //console.log(accion); //
 
     const mapa = {
       aliado: {
-        ofensivo: turnManager.enemigosVivos,
-        defensivo: turnManager.aliadosVivos,
-        soporte: turnManager.aliadosVivos
+        ofensivo: this.enemigosVivos,
+        defensivo:  this.aliadosVivos,
+        soporte:  this.aliadosVivos
       },
       enemigo: {
-        ofensivo: turnManager.aliadosVivos,
-        defensivo: turnManager.enemigosVivos,
-        soporte: turnManager.enemigosVivos
+        ofensivo:  this.aliadosVivos,
+        defensivo:  this.enemigosVivos,
+        soporte:  this.enemigosVivos
       }
     };
 
@@ -45,4 +66,4 @@ const actionManager = {
 
 };
 
-export default actionManager;
+export {actionManager}

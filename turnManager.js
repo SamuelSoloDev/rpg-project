@@ -1,52 +1,66 @@
 import { elementoAleatorio} from './main.js';
 import menuPersonaje from './UI/menuUi.js';
-import screen from "./UI/pantalla.js";
-import{pjInterface, actualizarUi} from './Jugadores/personajeInterface.js';
-import actionManager from "./buff_and_states/gestorDeAccion.js";
+import{pjInterface, actualizarUi} from './Jugadores/GameInterface.js';
+import {actionManager} from "./buff_and_states/gestorDeAccion.js";
 import {Jugadores, NPC} from './Jugadores/personaje.js'
 import iaNpc from "./Jugadores/IaNpc.js";
 import { ataque } from "./buff_and_states/abilities.js";
 import { STATUS_MANAGER } from "./buff_and_states/status.js";
 
-const turnManager = {
-  lista: [],
 
-  turno: true,
+const turnManagerActualContext = {
+  _Actual: null,
+  get Actual(){return this._Actual},
 
-  turnoEnCurso: false,
+  set Actual(valor){
+    this._Actual = valor;
+  },
+  getContexTurnManager(turnManager){
+    this.Actual = turnManager;
+    console.log(this.Actual);
 
-  intervalId: null,
+  }
+}
+class TurnManager {
+  constructor({ onBattleEnd } = {}) {
+    this.lista = [];
+    this.turno = true;
+    this.turnoEnCurso = false;
+    this.intervalId = null;
+    this.onBattleEnd = onBattleEnd;
+    this.batallaTerminada = false;
+  }
 
   get aliados() {
     return this.lista.filter(p => p.grupo === "aliado");
-  },
+  }
+
   get enemigos() {
     return this.lista.filter(p => p.grupo === "enemigo");
-  },
+  }
 
-  get aliadosVivos(){
-    return this.aliados.filter(p => p.vivo)
-  },
+  get aliadosVivos() {
+    return this.aliados.filter(p => p.vivo);
+  }
 
   get enemigosVivos() {
     return this.enemigos.filter(p => p.vivo);
-  },
+  }
 
   agregar(personaje) {
-  if (personaje instanceof Jugadores) {
-    this.lista.push(personaje);
-    this.lista.sort((a,b)=> b.vel - a.vel)
-  } else {
-    console.warn("⚠️ TurnManager.agregar recibió un objeto no válido:", personaje);
+    if (personaje instanceof Jugadores) {
+      this.lista.push(personaje);
+      this.lista.sort((a, b) => b.vel - a.vel);
+    } else {
+      console.warn("⚠️ TurnManager.agregar recibió un objeto no válido:", personaje);
+    }
   }
-},
 
   cargarBarra() {
-
-    if (this.turno) {
+    if (this.turno && !this.batallaTerminada) {
       this.intervalId = setInterval(() => {
-        this.lista.forEach((personaje) => {
-          if (this.turnoEnCurso) return;
+        this.lista.forEach(personaje => {
+          if (this.turnoEnCurso || this.batallaTerminada) return;
 
           if (personaje.vivo) {
             personaje.cargar();
@@ -56,107 +70,127 @@ const turnManager = {
           if (personaje.carga >= 100 && personaje.vivo) {
             this.turnoEnCurso = true;
             this.detenerCarga();
-
-            this.empezarTurno(personaje)
+            this.empezarTurno(personaje);
           }
         });
       }, 500);
     }
-  },
+  }
 
   detenerCarga() {
     this.turno = false;
     clearInterval(this.intervalId);
     this.intervalId = null;
-
-  },
+  }
 
   reanudarCarga() {
-    if (!this.turno) {
+    if (!this.turno && !this.batallaTerminada) {
       this.turno = true;
       this.cargarBarra();
     }
-  },
+  }
 
-  verificarEstado(){
-    console.log("verifico");
+  verificarEstado() {
+    let ganador = null;
 
-    const aliadosVivos = this.aliados.filter(p => p.vivo)
-    const enemigosVivos = this.enemigos.filter(p => p.vivo)
+    const aliadosVivos = this.aliadosVivos;
+    const enemigosVivos = this.enemigosVivos;
+
     if (aliadosVivos.length === 0) {
-      this.detenerCarga();
-      console.log("Ganó el equipo enemigo")
-      screen.reinicio();
+      ganador = "enemigos";
+      console.log("🏴‍☠️ Ganó el equipo enemigo");
+    } else if (enemigosVivos.length === 0) {
+      ganador = "aliados";
+      console.log("🛡️ Ganó el equipo aliado");
     }
-    else if (enemigosVivos.length === 0) {
-      this.detenerCarga();
-      console.log("Ganó el equipo aliado")
-      screen.reinicio();
-    }
-  },
 
-  async empezarTurno(personaje){
-    STATUS_MANAGER.checkStatus(personaje, "inicio")
+    // 🔹 Si ya hay un ganador, finaliza el combate
+    if (ganador && !this.batallaTerminada) {
+      setTimeout(() => {
+      this.finalizarCombate(ganador);
+    }, 1000);
+    }
+
+    return ganador;
+  }
+
+  async empezarTurno(personaje) {
+     if (this.batallaTerminada) return;
+     STATUS_MANAGER.checkStatus(personaje, "inicio");
+
+  // Si el personaje está bloqueado por estado, salta el turno sin ejecutar acciones
+  if (personaje.saltarTurno) {
+    console.log(`${personaje.nombre} está incapacitado y pierde su turno.`);
+    personaje.saltarTurno = false; // se limpia para el próximo turno
+    this.terminarTurno(personaje);
+    return;
+  }
+
+
+    personaje.manaRestaurar();
+
+
     let accion = null;
-    let objetivo = null;
+    let objetivo = [];
+
     console.log(`Es turno de: ${personaje.nombre}`);
 
     if (personaje.grupo === "aliado") {
-
-       accion = await menuPersonaje.uiPersonaje(personaje);
-       console.log(accion);
-
-       if (accion.rango === "propio") {
-        objetivo = personaje;
-       }
-       else {
-        let posiblesObjetivos = actionManager.obtenerPosiblesObjetivos(personaje, accion);
-       console.log(posiblesObjetivos);
-
-       objetivo = await menuPersonaje.uiSelector(posiblesObjetivos);
-       }
-
+      accion = await menuPersonaje.uiPersonaje(personaje);
+      if (accion.rango === "propio") {
+        objetivo.push(personaje);
+      } else if (accion.rango === "todos") {
+        objetivo = this.enemigosVivos;
+      } else {
+        const posiblesObjetivos = actionManager.obtenerPosiblesObjetivos(personaje, accion);
+        const objetivoElegido = await menuPersonaje.uiSelector(posiblesObjetivos);
+        objetivo.push(objetivoElegido);
       }
-    else {
-      let accionElegida = iaNpc.elegirAccion(personaje);
+
+    } else {
+      const accionElegida = iaNpc.elegirAccion(personaje);
       accion = accionElegida.accion;
-      let posiblesObjetivos = actionManager.obtenerPosiblesObjetivos(personaje, accion);
-       console.log(posiblesObjetivos);
-      objetivo = elementoAleatorio(posiblesObjetivos);
+      const posiblesObjetivos = actionManager.obtenerPosiblesObjetivos(personaje, accion);
+      const objetivoElegido = elementoAleatorio(posiblesObjetivos);
+      objetivo.push(objetivoElegido);
     }
 
-    accion.usar(personaje, objetivo);
-    console.log("se ejecutó la acción");
-
+    objetivo.forEach(obj => accion.usar(personaje, obj));
+    await new Promise(resolve => setTimeout(resolve, 1000));
     this.terminarTurno(personaje);
-  },
+  }
 
-  async terminarTurno(personaje){
-    STATUS_MANAGER.checkStatus(personaje, "final")
-    personaje.resetearCarga()
-    console.log(personaje.carga);
-
+  async terminarTurno(personaje) {
+    personaje.resetearCarga();
     menuPersonaje.esperarTurno();
     this.turnoEnCurso = false;
-    this.reanudarCarga();
+
+    if (!this.verificarEstado()) {
+      this.reanudarCarga();
+    }
+
+    STATUS_MANAGER.checkStatus(personaje, "final");
   }
-};
 
-export default turnManager;
+  // 🔹 NUEVO MÉTODO: detiene TODO el flujo del combate
+  finalizarCombate(ganador) {
+    this.detenerCarga();
+    this.turno = false;
+    this.turnoEnCurso = false;
+    this.batallaTerminada = true;
+
+    // Limpieza extra (opcional)
+    this.lista.forEach(p => p.carga = 0);
+
+    console.log(`⚔️ Combate finalizado. Ganador: ${ganador}`);
+
+    // Ejecutar callback si fue definida
+    if (typeof this.onBattleEnd === "function") {
+      this.onBattleEnd(ganador);
+    }
+  }
+}
 
 
-/*
-dejame replantearte el problema, el orden va así
-Player 1 (velocidad: 30),
-player 2 (vel 28),
-enemigo 1 (vel 20)
-enemigo 2 (vel 22)
 
-Los players ejecutan el render del menú cuando su turno llega (cuando la barra llega a 100)
-Por alguna razón, por que la velocidad de los players es casi la misma
-llega el turno del player 1, pero cómo la velocidad de player dos es casi igual, se renderiza el del player 2
-imagino que es por que el player dos fue el último justo después del player 1
-Cuando llega el turno de los players, las barra, efectivamente, dejan de cargar y el setInterval no está andando (cómo debe ser)
-entonces, que debo hacer para que no se superponga el turno del otro JUGADOR? (los enemigos no se superponen, ya que el problema se encuentra en lso players)
-
-*/
+export {TurnManager, turnManagerActualContext}

@@ -1,8 +1,8 @@
 import { ataque, curar } from "../buff_and_states/abilities.js";
 import { elementoAleatorio } from "../main.js";
 import { NPC } from "./personaje.js";
-import  turnManager  from "../turnManager.js";
-import actionManager from "../buff_and_states/gestorDeAccion.js";
+import  {TurnManager, turnManagerActualContext}  from "../turnManager.js";
+import {actionManager} from "../buff_and_states/gestorDeAccion.js";
 
 
 
@@ -14,15 +14,20 @@ const personalidad = {
       lastimar: "LOW"
     },
     estilo: {
-      tipoFav: "ataque",
-      tipoDanoFav: "fisico"
+    }
+  },
+  kamikaze: {
+    prioridades: {
+      lastimar: "MAX",
+    },
+    estilo: {
     }
   }
 };
 
 
 function hayObjetivoDebil(lista) {
-  return lista.some(personaje => personaje.vida <= 30);
+  return lista.some(personaje => personaje.vida <= personaje.base.vida * 0.3);
 }
 
 function rematar(lista, npc) {
@@ -31,8 +36,10 @@ function rematar(lista, npc) {
   }
 }
 
+
+
 function estoyDebil(npc) {
-  return npc.vida <= 50;
+  return npc.vida <= npc.base.vida * 0.5;
 }
 
 function sobrevivir(lista, npc) {
@@ -52,13 +59,13 @@ function lastimar(lista, npc) {
 function objetivoMasDebil(lista) {
   let enemigo = null;
   lista.forEach(personaje => {
-    console.log(`${personaje.nombre}`);
+   // console.log(`${personaje.nombre}`);
     if (enemigo == null) {
       enemigo = personaje;
-      console.log("pasó de null a numero");
+     // console.log("pasó de null a numero");
     } else if (personaje.vida <= enemigo.vida) {
       enemigo = personaje;
-      console.log("el resultado de enemigo cambió");
+      //console.log("el resultado de enemigo cambió");
     }
   });
   return enemigo;
@@ -79,105 +86,103 @@ const filtrosDeBusqueda = {
   }
 };
 
-
 const iaNpc = {
   buscarAccion(npc, naturaleza) {
-   // Busca la accion tomando cómo párametros una instancia del tipo "jugadores"
-  //  y un string que diga la "naturaleza" que se desea de la accion.
-  /* --IMPORTANTE--
-   es cómo un buscador generico de acciones, su lógica le permite ser reutilizable,
-   actualmente se usa para los filtros de busqueda de la lista.
-  */
+    // Busca la accion tomando cómo párametros una instancia del tipo "jugadores"
+    // y un string que diga la "naturaleza" que se desea de la accion.
+    /* --IMPORTANTE--
+     es cómo un buscador generico de acciones, su lógica le permite ser reutilizable,
+     actualmente se usa para los filtros de busqueda de la lista.
+    */
 
-  let perfil = personalidad[npc.comportamiento];
-  let acciones = npc.acciones.filter(
-    a => a?.accion?.tipo === perfil?.estilo?.tipoFav && a?.accion?.naturaleza === naturaleza
-  );
-  console.log(acciones);
-  // Si para este punto "acciones" está vacío, se asume que
-  // ninguna acción del npc coincide del todo con su estilo favorito
-  // no obstante, aún tiene prioridades...
-  if (acciones.length === 0) {
-    acciones = npc.acciones.filter(a => a?.accion?.naturaleza === naturaleza);
-    console.log(acciones);
+    let perfil = personalidad[npc.comportamiento];
+    let acciones = npc.acciones.filter(
+      a => a?.accion?.tipo === perfil?.estilo?.tipoFav && a?.accion?.naturaleza === naturaleza
+    );
+  //  console.log(perfil.estilo.tipoFav, naturaleza);
+   // console.log(npc.acciones);
 
-  }
-
-  //por ahora (y para no hacer más complicado el código), la accion elegida
-  // será aleatoria, luego se añadirá más lógica para la ia cuando avance el proyecto.
-  let accionElegida = elementoAleatorio(acciones);
-
-  console.log(accionElegida);
-  //retorna la accion resultante
-  return accionElegida;
-},
-
-npcPrioridades(npc) {
-  //pretende buscar las prioridades
-  return personalidad[npc.comportamiento].prioridades;
-},
-
-buscarPrioridad(lista, nivelPrioridad) {
-  let prioridad = null;
-  for (const propiedad in lista) {
-    if (lista[propiedad] === nivelPrioridad) {
-      prioridad = `${propiedad}`;
-      console.log(propiedad);
-      console.log(lista[propiedad]);
-      console.log(nivelPrioridad);
+    // Si para este punto "acciones" está vacío, se asume que
+    // ninguna acción del npc coincide del todo con su estilo favorito
+    // no obstante, aún tiene prioridades...
+    if (acciones.length === 0) {
+      acciones = npc.acciones.filter(a => a?.accion?.naturaleza === naturaleza);
+      // console.log(acciones);
     }
-  }
-  console.log(prioridad);
-  return prioridad;
-},
 
-elegirAccion(npc) {
-  let accionElegida = null;
-  let personalidad = this.npcPrioridades(npc);
-  console.log(personalidad);
-  let maximaPrioridad = this.buscarPrioridad(personalidad, "MAX");
-  console.log(maximaPrioridad); //aquí dice perfectamente que tiene un valor (el cual es "rematar")
+    // por ahora (y para no hacer más complicado el código), la accion elegida
+    // será aleatoria, luego se añadirá más lógica para la ia cuando avance el proyecto.
+    let accionElegida = elementoAleatorio(acciones);
 
-  if (maximaPrioridad) //para este punto, por alguna razon, maximaPrioridad es undefined y no entiendo por qué
-     {
-    let lista = actionManager.obtenerPosiblesObjetivos(npc, filtrosDeBusqueda[maximaPrioridad].tipoDeAccion)
-    console.log(lista);
+    // console.log(accionElegida);
+    // retorna la accion resultante
+    return accionElegida;
+  },
 
-    accionElegida = filtrosDeBusqueda[maximaPrioridad].accion(lista, npc);
-    console.log(accionElegida);
-    if (accionElegida) {
-      return accionElegida;
+  npcPrioridades(npc) {
+    // pretende buscar las prioridades
+    return personalidad[npc.comportamiento].prioridades;
+  },
+
+  buscarPrioridad(lista, nivelPrioridad) {
+    let prioridad = null;
+    for (const propiedad in lista) {
+      if (lista[propiedad] === nivelPrioridad) {
+        prioridad = `${propiedad}`;
+        // console.log(propiedad);
+        // console.log(lista[propiedad]);
+        // console.log(nivelPrioridad);
+      }
     }
-  }
+    // console.log(prioridad);
+    return prioridad;
+  },
 
-  let mediaPrioridad = this.buscarPrioridad(personalidad, "MID")
+  elegirAccion(npc) {
+    let accionElegida = null;
+    let personalidad = this.npcPrioridades(npc);
+    // console.log(personalidad);
 
-  if (mediaPrioridad) {
-    console.log(filtrosDeBusqueda[mediaPrioridad].tipoDeAccion);
-    let lista = actionManager.obtenerPosiblesObjetivos(npc, filtrosDeBusqueda[mediaPrioridad].tipoDeAccion)
-    console.log(lista);
+    let maximaPrioridad = this.buscarPrioridad(personalidad, "MAX");
+    // console.log(maximaPrioridad); // aquí dice perfectamente que tiene un valor (el cual es "rematar")
 
-    accionElegida = filtrosDeBusqueda[mediaPrioridad].accion(lista, npc);
-    console.log(accionElegida);
-    if (accionElegida) {
-      return accionElegida;
+    if (maximaPrioridad) {
+      let lista = actionManager.obtenerPosiblesObjetivos(npc, filtrosDeBusqueda[maximaPrioridad].tipoDeAccion)
+      // console.log(lista);
+
+      accionElegida = filtrosDeBusqueda[maximaPrioridad].accion(lista, npc);
+      // console.log(accionElegida);
+      if (accionElegida) {
+        return accionElegida;
+      }
     }
-  }
 
-  let bajaPrioridad = this.buscarPrioridad(personalidad, "LOW")
-  if (bajaPrioridad) {
-    let lista = actionManager.obtenerPosiblesObjetivos(npc, filtrosDeBusqueda[bajaPrioridad].tipoDeAccion)
-    console.log(lista);
+    let mediaPrioridad = this.buscarPrioridad(personalidad, "MID")
+    if (mediaPrioridad) {
+      // console.log(filtrosDeBusqueda[mediaPrioridad].tipoDeAccion);
+      let lista = actionManager.obtenerPosiblesObjetivos(npc, filtrosDeBusqueda[mediaPrioridad].tipoDeAccion)
+      // console.log(lista);
 
-    accionElegida = filtrosDeBusqueda[bajaPrioridad].accion(lista, npc);
-    console.log(accionElegida);
-    if (accionElegida) {
-      return accionElegida;
+      accionElegida = filtrosDeBusqueda[mediaPrioridad].accion(lista, npc);
+      // console.log(accionElegida);
+      if (accionElegida) {
+        return accionElegida;
+      }
+    }
+
+    let bajaPrioridad = this.buscarPrioridad(personalidad, "LOW")
+    if (bajaPrioridad) {
+      let lista = actionManager.obtenerPosiblesObjetivos(npc, filtrosDeBusqueda[bajaPrioridad].tipoDeAccion)
+      // console.log(lista);
+
+      accionElegida = filtrosDeBusqueda[bajaPrioridad].accion(lista, npc);
+      // console.log(accionElegida);
+      if (accionElegida) {
+        return accionElegida;
+      }
     }
   }
 }
 
-
-}
 
 export default iaNpc

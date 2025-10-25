@@ -5,15 +5,23 @@ const FABRICA = {
   clases: {
     Heroe,
     NPC,
-    Jugadores
+    Jugadores,
   },
 
   crearHeroe(tipoInstancia, moldeInstancia){
     const HEROE = this._crearInstancia(tipoInstancia, moldeInstancia);
-    this._asignarSignals(HEROE, moldeInstancia);
-    this._asignarHabilidades(HEROE, moldeInstancia);
-    this._asignarMagias(HEROE, moldeInstancia);
 
+
+    if (tipoInstancia == "Heroe") {
+      this._asignarHabilidades(HEROE, moldeInstancia);
+    this._asignarMagias(HEROE, moldeInstancia);
+    }
+
+    if (tipoInstancia == "NPC" ) {
+      this._asignarAcciones(HEROE, moldeInstancia)
+    }
+
+    this._asignarSignals(HEROE, moldeInstancia);
     return HEROE
   },
 
@@ -24,7 +32,7 @@ const FABRICA = {
     return  new Clase(moldeInstancia);
   },
   _asignarSignals(heroe, moldeInstancia){
-    moldeInstancia.signals.forEach(
+    moldeInstancia.signals?.forEach(
       signal => heroe.asignarSignal(signal.tipoSeñal, signal)
     )
   },
@@ -35,8 +43,10 @@ const FABRICA = {
 
   _asignarMagias(heroe, moldeInstancia){
     heroe.aprenderMagias(moldeInstancia.magias);
+  },
+  _asignarAcciones(heroe, moldeInstancia){
+    heroe.aprenderAcciones(moldeInstancia.acciones)
   }
-
 }
 
 export {FABRICA};

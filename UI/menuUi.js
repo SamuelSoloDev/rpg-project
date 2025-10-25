@@ -1,49 +1,47 @@
-import actionManager  from "../buff_and_states/gestorDeAccion.js";
-
-/* hice este cambio y me salió este error: menuUi.js:110 Uncaught (in promise) ReferenceError: resolve is not defined
-    at HTMLButtonElement.<anonymous> (menuUi.js:110:5)
-(anónimas)	@	menuUi.js:110 */
+import {actionManager}  from "../buff_and_states/gestorDeAccion.js";
 
 
 const menuPersonaje = {
-  // Agregar el menú
-  menu: document.getElementById("actionMenu"),
-  nombre: document.getElementById("menu--name"),
+  get menu() { return document.getElementById("actionMenu"); },
+  get nombre() { return document.getElementById("menu--name"); },
+  get mp() { return document.getElementById("menu--mp"); },
   menuDeOpcionesPrincipal: null,
 
-  // Limpiar el menú
+  _elementosDisponibles() {
+    return this.menu && this.nombre && this.mp;
+  },
+
   _limpiar() {
+    if (!this.menu) return;
     this.menu.innerHTML = "";
   },
 
-  // Agregar elemento al menú
   _agregar(...hijos) {
-  hijos.forEach(hijo => this.menu.append(hijo));
-}
-,
-
-  // Mostrar UI del personaje actual
- async uiPersonaje(personaje) {
-    this._limpiar();
-    return new Promise((resolve) => {
-      // agregar el nombre del personaje en el menú.
-      this.nombre.textContent = personaje.nombre;
-
-      let resultado = this._imprimirBotones(personaje.opciones, personaje, false)
-      resolve(resultado);
-    })
-
-
+    if (!this.menu) return;
+    hijos.forEach(hijo => this.menu.append(hijo));
   },
 
-  // Mostrar selección de objetivos
+  async uiPersonaje(personaje) {
+    if (!this._elementosDisponibles()) return; // 👈 protección
+
+    this._limpiar();
+    return new Promise((resolve) => {
+      this.nombre.textContent = personaje.nombre;
+      this.mp.textContent = `${personaje.mana}/${personaje.base.mana}`;
+      let resultado = this._imprimirBotones(personaje.opciones, personaje, false);
+      resolve(resultado);
+    });
+  },
+
   async uiSelector(array) {
+    if (!this.menu) return; // 👈 protección
     this._limpiar();
 
     return new Promise((resolve) => {
       array.forEach((objetivo) => {
         const boton = document.createElement("button");
         boton.textContent = objetivo.nombre;
+        boton.classList.add("option", "botonMenu");
         boton.addEventListener("click", () => {
           this._limpiar();
           resolve(objetivo);
@@ -53,74 +51,65 @@ const menuPersonaje = {
     });
   },
 
-  _imprimirBotones(opciones, personaje, volver){
+  _imprimirBotones(opciones, personaje, volver) {
+    if (!this.menu) return; // 👈 protección
 
-    if (volver == false) {
+    if (!volver) {
       this.menuDeOpcionesPrincipal = personaje;
     }
 
-
     return new Promise((resolve) => {
       let hayBotonVolver = volver;
-      let btnVolver = this._botonRetorn(this.menuDeOpcionesPrincipal, resolve)
-      opciones.forEach((opcion) =>{
+      let btnVolver = this._botonRetorn(this.menuDeOpcionesPrincipal, resolve);
+      btnVolver.id = "btn--volver";
+
+      opciones.forEach((opcion) => {
         const btn = document.createElement("button");
-        btn.classList.add("botonMenu")
+        btn.classList.add("botonMenu", "option");
         btn.textContent = opcion.texto;
+        btn.classList.add(opcion.texto.replaceAll(" ", ""));
 
-        if (opcion.valor?.costo !== undefined && opcion.valor?.costo > personaje.mana) {
-          console.log(`${opcion.texto} cuesta ${opcion.valor.costo}`);
-          btn.addEventListener("click", async () => {
-            alert("No tienes mana para esto")
-          });
-
+        if (opcion.valor?.costo !== undefined && opcion.valor.costo > personaje.mana) {
+          btn.addEventListener("click", () => alert("No tienes mana para esto"));
           btn.classList.add("nopuede");
-        }
-        else {
-          btn.addEventListener("click", async () => {
-        this._limpiar();
-          if (opcion.subopciones) {
-
-          // Si hay subopciones, crear otro menú y esperar su resultado
-          const resultado = await this._imprimirBotones(opcion.subopciones, personaje, true);
-          resolve(resultado); // Retornar el valor final desde subopciones
-
-
         } else {
-          console.log(opcion.valor);
-          resolve(opcion.valor); // Retornar el valor directamente
-
-
+          btn.addEventListener("click", async () => {
+            this._limpiar();
+            if (opcion.subopciones) {
+              const resultado = await this._imprimirBotones(opcion.subopciones, personaje, true);
+              resolve(resultado);
+            } else {
+              resolve(opcion.valor);
+            }
+          });
         }
+        this._agregar(btn);
       });
 
-    }
-      this._agregar(btn);
-      } )
-    if (hayBotonVolver) {
-      this._agregar(btnVolver);
-    }
-    })
+      if (hayBotonVolver) {
+        this._agregar(btnVolver);
+      }
+    });
   },
 
-  _botonRetorn(personaje, resolve){
-     let botonRetorno = document.createElement("button");
-     botonRetorno.classList.add("botonMenu");
-     botonRetorno.textContent = "Volver";
-     botonRetorno.addEventListener("click", async ()=> {
+  _botonRetorn(personaje, resolve) {
+    const botonRetorno = document.createElement("button");
+    botonRetorno.classList.add("botonMenu", "option");
+    botonRetorno.textContent = "Volver";
+    botonRetorno.addEventListener("click", async () => {
       this._limpiar();
-    // volvemos a imprimir el menú principal
-    const resultado = await this._imprimirBotones(personaje.opciones, personaje, false);
-    resolve(resultado);
-  });
-  return botonRetorno;
+      const resultado = await this._imprimirBotones(personaje.opciones, personaje, false);
+      resolve(resultado);
+    });
+    return botonRetorno;
   },
 
-  // Mostrar mensaje de espera
   esperarTurno() {
+    if (!this.menu) return; // 👈 protección
     this._limpiar();
 
     const msj = document.createElement("h1");
+    msj.classList.add("msjEspera");
     msj.textContent = "Esperando el siguiente turno";
     this._agregar(msj);
   }
